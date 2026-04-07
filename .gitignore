@@ -5,3 +5,7 @@ npm-debug.log*
 .env
 .env.local
 dist/
+
+# Runtime data — never commit user accounts, sessions, or messages
+data/players.json
+data/communications.json
