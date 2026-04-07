@@ -30,29 +30,14 @@ router.post('/auth/login', (req, res) => {
     return res.status(400).json({ error: 'Username and password required' });
   }
 
-  let player = db.getPlayerByUsername(username);
-
-  // Dev mode: auto-create admin user on first login
-  if (!player && username === 'admin' && password === 'admin') {
-    player = db.createPlayer({
-      id: 'player-admin',
-      username: 'admin',
-      password: 'admin',
-      displayName: 'Administrator',
-      createdAt: new Date().toISOString(),
-      lastSeen: new Date().toISOString(),
-      currentShip: null,
-      currentStation: null,
-      isOnline: false
-    });
-  }
+  const player = db.getPlayerByUsername(username.trim());
 
   if (!player || player.password !== password) {
     return res.status(401).json({ error: 'Invalid username or password' });
   }
 
   const token = uuidv4();
-  const session = db.createSession({
+  db.createSession({
     token,
     playerId: player.id,
     createdAt: new Date().toISOString()
@@ -73,23 +58,27 @@ router.post('/auth/register', (req, res) => {
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password required' });
   }
-  if (username.length < 3 || username.length > 20) {
+  const trimmed = username.trim();
+  if (trimmed.length < 3 || trimmed.length > 20) {
     return res.status(400).json({ error: 'Username must be 3-20 characters' });
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
+    return res.status(400).json({ error: 'Username may only contain letters, numbers, - and _' });
   }
   if (password.length < 4) {
     return res.status(400).json({ error: 'Password must be at least 4 characters' });
   }
 
-  const existing = db.getPlayerByUsername(username);
+  const existing = db.getPlayerByUsername(trimmed);
   if (existing) {
     return res.status(409).json({ error: 'Username already taken' });
   }
 
   const player = db.createPlayer({
     id: `player-${uuidv4()}`,
-    username,
+    username: trimmed,
     password,
-    displayName: displayName || username,
+    displayName: (displayName || '').trim() || trimmed,
     createdAt: new Date().toISOString(),
     lastSeen: new Date().toISOString(),
     currentShip: null,
@@ -99,10 +88,10 @@ router.post('/auth/register', (req, res) => {
 
   const token = uuidv4();
   db.createSession({ token, playerId: player.id, createdAt: new Date().toISOString() });
-  db.updatePlayer(player.id, { isOnline: true });
+  db.updatePlayer(player.id, { isOnline: true, lastSeen: new Date().toISOString() });
 
   const { password: _pw, ...safePlayer } = player;
-  res.json({ token, player: safePlayer });
+  res.status(201).json({ token, player: safePlayer });
 });
 
 /**
@@ -155,11 +144,11 @@ router.get('/ships/sector/:sectorId', requireAuth, (req, res) => {
  */
 router.post('/ships', requireAuth, (req, res) => {
   const { name, shipClass, sector } = req.body;
-  if (!name) return res.status(400).json({ error: 'Ship name required' });
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Ship name required' });
 
   const ship = db.createShip({
     id: `ship-${uuidv4()}`,
-    name,
+    name: name.trim(),
     class: shipClass || 'Scout',
     sector: sector || 'A1',
     position: { x: 500, y: 500 },
@@ -324,18 +313,31 @@ router.post('/comms/crew/:shipId', requireAuth, (req, res) => {
 
 /**
  * POST /api/comms/hail
- * Send a hail to another ship
- * Body: { fromShipId, toShipId, text }
+ * Send a hail REQUEST to another ship (no message required)
+ * Body: { fromShipId, toShipId }
  */
 router.post('/comms/hail', requireAuth, (req, res) => {
-  const { fromShipId, toShipId, text } = req.body;
-  if (!fromShipId || !toShipId || !text) {
-    return res.status(400).json({ error: 'fromShipId, toShipId, and text required' });
+  const { fromShipId, toShipId } = req.body;
+  if (!fromShipId || !toShipId) {
+    return res.status(400).json({ error: 'fromShipId and toShipId required' });
+  }
+  if (fromShipId === toShipId) {
+    return res.status(400).json({ error: 'Cannot hail your own ship' });
   }
 
   const fromShip = db.getShipById(fromShipId);
   const toShip = db.getShipById(toShipId);
   if (!fromShip || !toShip) return res.status(404).json({ error: 'Ship not found' });
+
+  // Check if there's already a pending or active hail between these ships
+  const existing = db.getHailsForShip(fromShipId).find(h =>
+    ((h.fromShipId === fromShipId && h.toShipId === toShipId) ||
+     (h.fromShipId === toShipId && h.toShipId === fromShipId)) &&
+    (h.status === 'pending' || h.status === 'accepted')
+  );
+  if (existing) {
+    return res.status(409).json({ error: 'A hail is already pending or active with this ship' });
+  }
 
   const hail = db.addHail({
     id: uuidv4(),
@@ -344,8 +346,8 @@ router.post('/comms/hail', requireAuth, (req, res) => {
     toShipId,
     toShipName: toShip.name,
     playerId: req.player.id,
-    text: text.trim(),
     status: 'pending',
+    channelId: null,
     timestamp: new Date().toISOString()
   });
   res.status(201).json({ hail });
@@ -357,6 +359,84 @@ router.post('/comms/hail', requireAuth, (req, res) => {
 router.get('/comms/hails/:shipId', requireAuth, (req, res) => {
   const hails = db.getHailsForShip(req.params.shipId);
   res.json({ hails });
+});
+
+/**
+ * POST /api/comms/hail/:id/accept
+ * Accept an incoming hail request — opens a private channel
+ */
+router.post('/comms/hail/:id/accept', requireAuth, (req, res) => {
+  const hail = db.getHailById(req.params.id);
+  if (!hail) return res.status(404).json({ error: 'Hail not found' });
+  if (hail.status !== 'pending') return res.status(400).json({ error: 'Hail is not pending' });
+  if (req.player.currentShip !== hail.toShipId) {
+    return res.status(403).json({ error: 'You are not on the target ship' });
+  }
+
+  const channelId = uuidv4();
+  const updated = db.updateHail(hail.id, {
+    status: 'accepted',
+    channelId,
+    acceptedAt: new Date().toISOString()
+  });
+  res.json({ hail: updated, channelId });
+});
+
+/**
+ * POST /api/comms/hail/:id/decline
+ * Decline an incoming hail request
+ */
+router.post('/comms/hail/:id/decline', requireAuth, (req, res) => {
+  const hail = db.getHailById(req.params.id);
+  if (!hail) return res.status(404).json({ error: 'Hail not found' });
+  if (hail.status !== 'pending') return res.status(400).json({ error: 'Hail is not pending' });
+
+  const updated = db.updateHail(hail.id, { status: 'declined', declinedAt: new Date().toISOString() });
+  res.json({ hail: updated });
+});
+
+/**
+ * POST /api/comms/hail/:id/close
+ * Close/end an active hail channel
+ */
+router.post('/comms/hail/:id/close', requireAuth, (req, res) => {
+  const hail = db.getHailById(req.params.id);
+  if (!hail) return res.status(404).json({ error: 'Hail not found' });
+  if (hail.status !== 'accepted') return res.status(400).json({ error: 'Hail channel is not active' });
+
+  const updated = db.updateHail(hail.id, { status: 'closed', closedAt: new Date().toISOString() });
+  res.json({ hail: updated });
+});
+
+/**
+ * GET /api/comms/hail-chat/:channelId
+ * Retrieve messages in a private hail channel
+ */
+router.get('/comms/hail-chat/:channelId', requireAuth, (req, res) => {
+  const messages = db.getHailChat(req.params.channelId);
+  res.json({ messages });
+});
+
+/**
+ * POST /api/comms/hail-chat/:channelId
+ * Send a message in a private hail channel
+ * Body: { text, shipId }
+ */
+router.post('/comms/hail-chat/:channelId', requireAuth, (req, res) => {
+  const { text, shipId } = req.body;
+  if (!text || !text.trim()) return res.status(400).json({ error: 'Message text required' });
+
+  const player = req.player;
+  const message = db.addHailChatMessage(req.params.channelId, {
+    id: uuidv4(),
+    channelId: req.params.channelId,
+    playerId: player.id,
+    displayName: player.displayName || player.username,
+    shipId: shipId || player.currentShip,
+    text: text.trim(),
+    timestamp: new Date().toISOString()
+  });
+  res.status(201).json({ message });
 });
 
 /**

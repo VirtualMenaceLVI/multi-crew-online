@@ -248,6 +248,7 @@
   flex: 1;
   display: flex;
   overflow: hidden;
+  position: relative;
 }
 
 /* Side panels (used by some stations) */
@@ -479,4 +480,93 @@
 }
 .hail-ship-select {
   width: 100%;
+}
+
+/* ── Hail Request Cards ── */
+.hail-request-card {
+  background: rgba(255, 136, 0, 0.1);
+  border: 1px solid var(--color-warn);
+  border-radius: 4px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  animation: hailPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes hailPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(255, 136, 0, 0.2); }
+  50%       { box-shadow: 0 0 14px rgba(255, 136, 0, 0.5); }
+}
+
+.hail-request-name {
+  font-size: 12px;
+  color: var(--color-warn);
+  font-weight: bold;
+}
+
+.hail-request-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Hail Channel Overlay ── */
+.hail-channel-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 8, 16, 0.97);
+  border: 1px solid var(--color-warn);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 40px rgba(255, 136, 0, 0.25);
+  animation: channelOpen 0.2s ease;
+}
+
+@keyframes channelOpen {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.hail-channel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--color-bg-dark);
+  border-bottom: 1px solid var(--color-warn);
+  flex-shrink: 0;
+}
+
+.hail-channel-title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--color-warn);
+  text-transform: uppercase;
+}
+
+.hail-channel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 10px;
+  overflow: hidden;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.comms-message.channel {
+  background: rgba(255, 136, 0, 0.06);
+  border-left: 2px solid var(--color-warn);
+}
+
+.comms-message.channel-own {
+  background: rgba(0, 170, 255, 0.06);
+  border-left: 2px solid var(--color-accent);
 }

@@ -16,9 +16,6 @@
 <!-- CRT Scanline overlay -->
 <div class="scanlines"></div>
 
-<!-- Dev mode badge -->
-<div class="dev-badge">DEV MODE</div>
-
 <!-- Toast notifications -->
 <div id="toast-container"></div>
 
@@ -82,7 +79,7 @@
           <div class="auth-field">
             <label for="reg-username">Username</label>
             <input type="text" id="reg-username" name="username" autocomplete="username"
-                   placeholder="Choose a username" required />
+                   placeholder="3–20 characters, letters/numbers/_-" required />
           </div>
           <div class="auth-field">
             <label for="reg-display">Display Name (optional)</label>
@@ -92,7 +89,7 @@
           <div class="auth-field">
             <label for="reg-password">Password</label>
             <input type="password" id="reg-password" name="password" autocomplete="new-password"
-                   placeholder="Choose a password" required />
+                   placeholder="At least 4 characters" required />
           </div>
           <div class="auth-field">
             <label for="reg-password2">Confirm Password</label>
@@ -102,11 +99,12 @@
           <div id="register-error" class="auth-error"></div>
           <button type="submit" class="auth-submit">CREATE ACCOUNT</button>
         </form>
+      </div>
 
-        <!-- Dev hint -->
-        <div class="auth-info">
-          <span class="dev-hint">⚙ DEV MODE: Use <strong>admin</strong> / <strong>admin</strong> to sign in instantly</span>
-        </div>
+      <!-- Discord recommendation -->
+      <div class="discord-notice">
+        💬 <strong>Discord recommended</strong> — coordinate with your crew in real time.
+        Join a voice channel with your crew before taking the bridge.
       </div>
 
     </div>
@@ -166,7 +164,7 @@
       <div class="station-nav-right">
         <div class="station-status-indicator">
           <span class="status-indicator online"></span>
-          <span class="text-xs text-dim">DEV SERVER</span>
+          <span class="text-xs text-dim" id="server-status-label">ONLINE</span>
         </div>
         <button class="btn station-nav-btn" id="btn-sector-map">🗺 SECTOR MAP</button>
         <button class="btn station-nav-btn" id="btn-change-station">↩ STATIONS</button>

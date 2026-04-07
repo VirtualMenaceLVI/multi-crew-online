@@ -1,7 +1,6 @@
 /**
  * api-client.js
  * Abstracted API layer - all server communication goes through here.
- * In dev mode this calls our Express/JSON server.
  * Swap the BASE_URL or methods to switch to a real backend.
  */
 
@@ -127,12 +126,26 @@ const ApiClient = (() => {
     return request('POST', `/comms/crew/${shipId}`, { text });
   }
 
-  async function sendHail(fromShipId, toShipId, text) {
-    return request('POST', '/comms/hail', { fromShipId, toShipId, text });
+  /** Send a hail REQUEST (no message body needed) */
+  async function sendHailRequest(fromShipId, toShipId) {
+    return request('POST', '/comms/hail', { fromShipId, toShipId });
   }
 
   async function getHails(shipId) {
     return request('GET', `/comms/hails/${shipId}`);
+  }
+
+  /** Respond to a hail: action = 'accept' | 'decline' | 'close' */
+  async function respondToHail(hailId, action) {
+    return request('POST', `/comms/hail/${hailId}/${action}`);
+  }
+
+  async function getHailChat(channelId) {
+    return request('GET', `/comms/hail-chat/${channelId}`);
+  }
+
+  async function sendHailMessage(channelId, text, shipId) {
+    return request('POST', `/comms/hail-chat/${channelId}`, { text, shipId });
   }
 
   async function getBroadcast(limit = 50) {
@@ -150,6 +163,9 @@ const ApiClient = (() => {
     login, register, logout, getMe,
     getShips, getShip, getShipsInSector, createShip, updateShip, joinShip, leaveShip, tickShip,
     getSectors, getSector,
-    getCrewChat, sendCrewMessage, sendHail, getHails, getBroadcast, sendBroadcast
+    getCrewChat, sendCrewMessage,
+    sendHailRequest, getHails, respondToHail,
+    getHailChat, sendHailMessage,
+    getBroadcast, sendBroadcast
   };
 })();

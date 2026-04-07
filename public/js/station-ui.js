@@ -707,28 +707,31 @@ const StationUI = (() => {
 
     container.innerHTML = `
       <div class="side-panel">
-        <div class="panel flex-1">
-          <div class="panel-title">Hail a Ship</div>
+        <div class="panel">
+          <div class="panel-title">Request Hail</div>
           <div class="hail-panel">
             <select class="hail-ship-select" id="hail-target">
-              <option value="">-- Select Target --</option>
+              <option value="">-- Select Ship --</option>
               ${ships.map(s => `<option value="${s.id}">${_esc(s.name)}</option>`).join('')}
             </select>
-            <textarea id="hail-text" rows="3" placeholder="Enter hail message..." style="resize:none;font-size:12px"></textarea>
-            <button class="btn btn-warn" id="btn-send-hail" style="width:100%">📡 OPEN CHANNEL</button>
+            <button class="btn btn-warn" id="btn-send-hail" style="width:100%">📡 REQUEST HAIL</button>
           </div>
         </div>
-        <div class="panel">
-          <div class="panel-title">Incoming Hails</div>
-          <div id="hail-log" class="comms-log scrollable" style="max-height:140px">
+        <div class="panel" style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden">
+          <div class="panel-title">Incoming Requests</div>
+          <div id="incoming-hails" style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1">
             <p class="text-dim text-sm">No incoming hails.</p>
           </div>
         </div>
+        <div class="panel">
+          <div class="panel-title">Sent Request</div>
+          <div id="sent-hail-status" style="font-size:12px;color:var(--color-text-dim)">No pending request.</div>
+        </div>
       </div>
       <div class="center-area">
-        <div class="panel flex-1" style="display:flex;flex-direction:column">
+        <div class="panel flex-1" style="display:flex;flex-direction:column;min-height:0">
           <div class="panel-title">Crew Communications — ${_esc(ship.name)}</div>
-          <div class="comms-log scrollable flex-1" id="crew-chat-log" style="height:200px"></div>
+          <div class="comms-log scrollable flex-1" id="crew-chat-log" style="min-height:0"></div>
           <div class="comms-input-area">
             <input type="text" class="comms-input" id="crew-chat-input" placeholder="Send message to crew...">
             <button class="btn comms-send-btn" id="btn-send-crew">SEND</button>
@@ -737,17 +740,9 @@ const StationUI = (() => {
       </div>
     `;
 
-    // Load existing messages
+    // Load existing crew messages
     const messages = await Comms.loadCrewChat(ship.id);
     Comms.renderMessages(document.getElementById('crew-chat-log'), messages);
-
-    // Load hails
-    const hailsData = await Comms.getHails(ship.id);
-    if (hailsData.length > 0) {
-      Comms.renderMessages(document.getElementById('hail-log'), hailsData.map(h => ({
-        ...h, displayName: h.fromShipName, type: 'hail'
-      })));
-    }
 
     // Send crew message
     const chatInput = document.getElementById('crew-chat-input');
@@ -761,15 +756,85 @@ const StationUI = (() => {
     document.getElementById('btn-send-crew').addEventListener('click', sendCrew);
     chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendCrew(); });
 
-    // Send hail
+    // Send hail request
     document.getElementById('btn-send-hail').addEventListener('click', async () => {
       const toShipId = document.getElementById('hail-target').value;
-      const text = document.getElementById('hail-text').value.trim();
-      if (!toShipId || !text) { UI.showToast('Select a target and enter a message.', 'warn'); return; }
-      const hail = await Comms.sendHail(ship.id, toShipId, text);
+      if (!toShipId) { UI.showToast('Select a target ship.', 'warn'); return; }
+      const btn = document.getElementById('btn-send-hail');
+      btn.disabled = true;
+      const hail = await Comms.sendHailRequest(ship.id, toShipId);
+      btn.disabled = false;
       if (hail) {
-        document.getElementById('hail-text').value = '';
-        Comms.appendMessage(document.getElementById('hail-log'), { ...hail, displayName: hail.fromShipName, type: 'hail' });
+        const sentStatus = document.getElementById('sent-hail-status');
+        if (sentStatus) sentStatus.innerHTML =
+          `<span class="text-warn">Hailing <strong>${_esc(hail.toShipName)}</strong>...</span><br><span class="text-dim" style="font-size:11px">Awaiting response</span>`;
+      }
+    });
+
+    // Track opened channels to avoid double-opening
+    const _openedChannelIds = new Set();
+
+    // Hail polling
+    Comms.startHailPolling(ship.id, {
+      onRefreshIncoming: (incoming) => {
+        const incomingEl = document.getElementById('incoming-hails');
+        if (!incomingEl) return;
+        if (incoming.length === 0) {
+          incomingEl.innerHTML = '<p class="text-dim text-sm">No incoming hails.</p>';
+          return;
+        }
+        incomingEl.innerHTML = '';
+        for (const hail of incoming) {
+          const card = document.createElement('div');
+          card.className = 'hail-request-card';
+          card.innerHTML = `
+            <div>
+              <div class="hail-request-name">📡 ${_esc(hail.fromShipName)}</div>
+              <div style="font-size:11px;color:var(--color-text-dim)">Requesting channel</div>
+            </div>
+            <div class="hail-request-actions">
+              <button class="btn btn-success" data-hail-id="${hail.id}" data-action="accept" style="padding:4px 10px;font-size:11px">ACCEPT</button>
+              <button class="btn btn-danger" data-hail-id="${hail.id}" data-action="decline" style="padding:4px 10px;font-size:11px">DECLINE</button>
+            </div>
+          `;
+          card.querySelectorAll('button[data-action]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const action = btn.dataset.action;
+              const hailId = btn.dataset.hailId;
+              btn.disabled = true;
+              if (action === 'accept') {
+                const result = await Comms.respondToHail(hailId, 'accept');
+                if (result && result.channelId && !_openedChannelIds.has(result.channelId)) {
+                  _openedChannelIds.add(result.channelId);
+                  _openHailChannel(ship, result.hail, result.channelId);
+                }
+              } else {
+                await Comms.respondToHail(hailId, 'decline');
+                UI.showToast(`Hail from ${hail.fromShipName} declined.`, 'info');
+              }
+            });
+          });
+          incomingEl.appendChild(card);
+        }
+      },
+      onNewIncoming: (hail) => {
+        UI.showToast(`📡 Incoming hail request from ${hail.fromShipName}!`, 'warn');
+      },
+      onAccepted: (hail) => {
+        if (hail.channelId && !_openedChannelIds.has(hail.channelId)) {
+          _openedChannelIds.add(hail.channelId);
+          _openHailChannel(ship, hail, hail.channelId);
+        }
+        const sentStatus = document.getElementById('sent-hail-status');
+        if (sentStatus) sentStatus.innerHTML = '<span class="text-success">Channel established!</span>';
+      },
+      onDeclined: (hail) => {
+        UI.showToast(`${hail.toShipName} declined your hail request.`, 'warn');
+        const sentStatus = document.getElementById('sent-hail-status');
+        if (sentStatus) sentStatus.innerHTML = '<span class="text-danger">Hail declined.</span>';
+      },
+      onChannelClosed: () => {
+        _closeHailChannel();
       }
     });
 
@@ -779,6 +844,88 @@ const StationUI = (() => {
       if (!log) return;
       for (const msg of newMsgs) Comms.appendMessage(log, msg);
     });
+  }
+
+  function _openHailChannel(ship, hail, channelId) {
+    const contentEl = document.getElementById('station-content');
+    if (!contentEl) return;
+
+    // Remove any existing overlay
+    const existing = document.getElementById('hail-channel-overlay');
+    if (existing) existing.remove();
+
+    const otherShipName = hail.fromShipId === ship.id ? hail.toShipName : hail.fromShipName;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'hail-channel-overlay';
+    overlay.className = 'hail-channel-overlay';
+    overlay.innerHTML = `
+      <div class="hail-channel-header">
+        <div>
+          <div class="hail-channel-title">🔒 SECURE CHANNEL — ${_esc(otherShipName)}</div>
+          <div style="font-size:11px;color:var(--color-text-dim)">Encrypted two-way communication active</div>
+        </div>
+        <button class="btn btn-danger" id="btn-end-channel">END CHANNEL</button>
+      </div>
+      <div class="hail-channel-body">
+        <div class="comms-log scrollable" id="hail-channel-log" style="flex:1;min-height:0"></div>
+        <div class="comms-input-area">
+          <input type="text" class="comms-input" id="hail-channel-input" placeholder="Transmit to ${_esc(otherShipName)}...">
+          <button class="btn comms-send-btn btn-warn" id="btn-send-channel">TRANSMIT</button>
+        </div>
+      </div>
+    `;
+    contentEl.appendChild(overlay);
+
+    // Load existing messages then start polling
+    Comms.getHailChatMessages(channelId).then(msgs => {
+      const log = document.getElementById('hail-channel-log');
+      if (!log) return;
+      Comms.renderMessages(log, msgs.map(m => ({
+        ...m,
+        displayName: m.displayName + (m.shipId === ship.id ? ' (us)' : ''),
+        type: m.shipId === ship.id ? 'channel-own' : 'channel'
+      })));
+
+      // Start channel polling from current count
+      Comms.startChannelPolling(channelId, msgs.length, (newMsgs) => {
+        const chatLog = document.getElementById('hail-channel-log');
+        if (!chatLog) return;
+        for (const msg of newMsgs) {
+          Comms.appendMessage(chatLog, {
+            ...msg,
+            displayName: msg.displayName + (msg.shipId === ship.id ? ' (us)' : ''),
+            type: msg.shipId === ship.id ? 'channel-own' : 'channel'
+          });
+        }
+      });
+    });
+
+    // Send channel message
+    const channelInput = document.getElementById('hail-channel-input');
+    const sendChannelMsg = async () => {
+      const text = channelInput.value.trim();
+      if (!text) return;
+      channelInput.value = '';
+      await Comms.sendHailMessage(channelId, text, ship.id);
+      // Message will appear via poll
+    };
+    document.getElementById('btn-send-channel').addEventListener('click', sendChannelMsg);
+    channelInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendChannelMsg(); });
+
+    document.getElementById('btn-end-channel').addEventListener('click', async () => {
+      await Comms.respondToHail(hail.id, 'close');
+      _closeHailChannel();
+      UI.showToast('Secure channel closed.', 'info');
+    });
+
+    UI.showToast(`🔒 Secure channel with ${otherShipName} established.`, 'success');
+  }
+
+  function _closeHailChannel() {
+    Comms.stopChannelPolling();
+    const overlay = document.getElementById('hail-channel-overlay');
+    if (overlay) overlay.remove();
   }
 
   // ── Viewscreen init ───────────────────────────────────────────────────────
@@ -803,6 +950,8 @@ const StationUI = (() => {
     GameState.stopPolling();
     MapRenderer.stopRendering();
     Comms.stopPolling();
+    Comms.stopHailPolling();
+    Comms.stopChannelPolling();
     Router.navigate('station-select');
   }
 
@@ -810,7 +959,7 @@ const StationUI = (() => {
 
   function _esc(str) {
     return String(str || '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   return {

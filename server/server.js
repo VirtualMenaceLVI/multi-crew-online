@@ -85,11 +85,11 @@ app.use((err, req, res, _next) => {
 app.listen(PORT, () => {
   console.log(`
   ╔══════════════════════════════════════════╗
-  ║       MULTI-CREW ONLINE - DEV SERVER     ║
+  ║         MULTI-CREW ONLINE SERVER         ║
   ╚══════════════════════════════════════════╝
-  Mode   : ${DEV_MODE ? 'DEVELOPMENT (JSON files)' : 'PRODUCTION'}
+  Mode   : ${DEV_MODE ? 'DEVELOPMENT' : 'PRODUCTION'}
   Port   : ${PORT}
-  URL    : http://localhost:${PORT}
+  Data   : JSON file store (data/)
   `);
 });
 
