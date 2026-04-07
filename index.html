@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Crew Online</title>
+
+  <!-- Global + screen styles -->
+  <link rel="stylesheet" href="/public/css/styles.css" />
+  <link rel="stylesheet" href="/public/css/homescreen.css" />
+  <link rel="stylesheet" href="/public/css/stations.css" />
+  <link rel="stylesheet" href="/public/css/maps.css" />
+</head>
+<body>
+
+<!-- CRT Scanline overlay -->
+<div class="scanlines"></div>
+
+<!-- Dev mode badge -->
+<div class="dev-badge">DEV MODE</div>
+
+<!-- Toast notifications -->
+<div id="toast-container"></div>
+
+<!-- Generic prompt modal -->
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Input Required</div>
+    <div class="auth-field">
+      <input type="text" id="modal-input" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="modal-cancel">CANCEL</button>
+      <button class="btn btn-success" id="modal-confirm">CONFIRM</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     APP SCREENS
+     ═══════════════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- ────────────────────────────────────────────────────────────
+       HOMESCREEN
+       ──────────────────────────────────────────────────────────── -->
+  <div id="screen-home" class="screen">
+    <div class="home-container">
+
+      <!-- Logo -->
+      <div class="home-logo">
+        <div class="home-logo-title">MULTI-CREW ONLINE</div>
+        <div class="home-logo-subtitle">Bridge Command Simulation</div>
+      </div>
+
+      <!-- Auth Window -->
+      <div class="auth-window">
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">SIGN IN</button>
+          <button class="auth-tab" data-tab="register">SIGN UP</button>
+        </div>
+
+        <!-- Login Form -->
+        <form class="auth-form active" id="form-login">
+          <div class="auth-field">
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" name="username" autocomplete="username"
+                   placeholder="Enter username" required />
+          </div>
+          <div class="auth-field">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" name="password" autocomplete="current-password"
+                   placeholder="Enter password" required />
+          </div>
+          <div id="login-error" class="auth-error"></div>
+          <button type="submit" class="auth-submit">ENGAGE</button>
+        </form>
+
+        <!-- Register Form -->
+        <form class="auth-form" id="form-register">
+          <div class="auth-field">
+            <label for="reg-username">Username</label>
+            <input type="text" id="reg-username" name="username" autocomplete="username"
+                   placeholder="Choose a username" required />
+          </div>
+          <div class="auth-field">
+            <label for="reg-display">Display Name (optional)</label>
+            <input type="text" id="reg-display" name="displayName"
+                   placeholder="Commander..." />
+          </div>
+          <div class="auth-field">
+            <label for="reg-password">Password</label>
+            <input type="password" id="reg-password" name="password" autocomplete="new-password"
+                   placeholder="Choose a password" required />
+          </div>
+          <div class="auth-field">
+            <label for="reg-password2">Confirm Password</label>
+            <input type="password" id="reg-password2" name="password2" autocomplete="new-password"
+                   placeholder="Confirm password" required />
+          </div>
+          <div id="register-error" class="auth-error"></div>
+          <button type="submit" class="auth-submit">CREATE ACCOUNT</button>
+        </form>
+
+        <!-- Dev hint -->
+        <div class="auth-info">
+          <span class="dev-hint">⚙ DEV MODE: Use <strong>admin</strong> / <strong>admin</strong> to sign in instantly</span>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /screen-home -->
+
+
+  <!-- ────────────────────────────────────────────────────────────
+       STATION SELECTOR
+       ──────────────────────────────────────────────────────────── -->
+  <div id="screen-station-select" class="screen">
+    <div class="station-select-container">
+
+      <div class="station-select-header">
+        <div class="station-select-title">Station Assignment</div>
+        <div class="station-select-ship" id="station-select-ship-name">Select a ship to continue</div>
+      </div>
+
+      <!-- Ship Selection -->
+      <div class="ship-selection-area">
+        <div class="panel-title">Available Ships</div>
+        <div class="ship-list" id="ship-list">
+          <!-- Populated by JS -->
+        </div>
+        <div style="margin-top:12px;display:flex;gap:10px">
+          <button class="btn create-ship-btn" id="btn-create-ship">+ CREATE SHIP</button>
+        </div>
+      </div>
+
+      <!-- Station Grid -->
+      <div class="ship-selection-area">
+        <div class="panel-title">Choose Your Station</div>
+        <div class="stations-grid" id="stations-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="station-select-actions">
+        <button class="btn btn-danger" id="btn-logout">⏏ LOGOUT</button>
+      </div>
+
+    </div>
+  </div><!-- /screen-station-select -->
+
+
+  <!-- ────────────────────────────────────────────────────────────
+       STATION VIEW (frame for all station UIs)
+       ──────────────────────────────────────────────────────────── -->
+  <div id="screen-station" class="screen">
+
+    <!-- Top navigation bar -->
+    <div class="station-nav">
+      <div class="station-nav-left">
+        <div class="station-badge" id="station-badge">STATION</div>
+        <div class="station-ship-name" id="station-ship-name">–</div>
+        <div class="station-sector-label" id="station-sector-label">Sector –</div>
+      </div>
+      <div class="station-nav-right">
+        <div class="station-status-indicator">
+          <span class="status-indicator online"></span>
+          <span class="text-xs text-dim">DEV SERVER</span>
+        </div>
+        <button class="btn station-nav-btn" id="btn-sector-map">🗺 SECTOR MAP</button>
+        <button class="btn station-nav-btn" id="btn-change-station">↩ STATIONS</button>
+      </div>
+    </div>
+
+    <!-- Station content (injected by StationUI) -->
+    <div class="station-content" id="station-content">
+      <!-- Dynamic content rendered per station -->
+    </div>
+
+  </div><!-- /screen-station -->
+
+
+  <!-- ────────────────────────────────────────────────────────────
+       SECTOR MAP
+       ──────────────────────────────────────────────────────────── -->
+  <div id="screen-sector-map" class="screen">
+    <div class="sector-map-header">
+      <div class="sector-map-title">⬡ SECTOR MAP</div>
+      <div class="flex items-center gap-12">
+        <span class="text-dim text-sm">Click a sector to view details</span>
+        <button class="btn station-nav-btn" id="btn-sector-map-back">↩ BACK TO STATION</button>
+      </div>
+    </div>
+
+    <div class="sector-map-body">
+      <div>
+        <!-- Sector grid rendered by MapRenderer.renderSectorMap -->
+        <div id="sector-grid-container" class="sector-grid-container"></div>
+        <div style="text-align:center;margin-top:10px;font-size:11px;color:var(--color-text-dim);letter-spacing:1px">
+          🟢 Planet &nbsp;|&nbsp; 🔵 Starbase &nbsp;|&nbsp; ⚫ Asteroids &nbsp;|&nbsp;
+          <span style="color:var(--color-accent)">Highlighted = Current Sector</span>
+        </div>
+      </div>
+    </div>
+  </div><!-- /screen-sector-map -->
+
+</div><!-- /app -->
+
+
+<!-- ── Scripts (order matters) ─────────────────────────────────────────────── -->
+<script src="/public/js/api-client.js"></script>
+<script src="/public/js/game-state.js"></script>
+<script src="/public/js/map-renderer.js"></script>
+<script src="/public/js/comms.js"></script>
+<script src="/public/js/station-ui.js"></script>
+<script src="/public/js/auth.js"></script>
+<script src="/public/js/main.js"></script>
+
+</body>
+</html>

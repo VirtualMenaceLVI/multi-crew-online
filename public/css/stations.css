@@ -1,0 +1,482 @@
+/* ============================================================
+   stations.css - Station selector & station UI styles
+   ============================================================ */
+
+/* ══════════════════════════════════════════════════════════
+   STATION SELECTOR
+   ══════════════════════════════════════════════════════════ */
+
+#screen-station-select {
+  background:
+    radial-gradient(ellipse at center, rgba(0, 40, 80, 0.5) 0%, transparent 70%),
+    var(--color-bg);
+  justify-content: center;
+  align-items: center;
+}
+
+.station-select-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 900px;
+  width: 100%;
+  padding: 20px;
+}
+
+.station-select-header {
+  text-align: center;
+}
+
+.station-select-title {
+  font-family: var(--font-ui);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--color-text-bright);
+}
+
+.station-select-ship {
+  font-family: var(--font-main);
+  font-size: 13px;
+  color: var(--color-accent);
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+/* Ship Selection Panel */
+.ship-selection-area {
+  width: 100%;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.ship-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.ship-card {
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  min-width: 160px;
+}
+.ship-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent-glow);
+}
+.ship-card.selected {
+  border-color: var(--color-accent);
+  background: rgba(0, 170, 255, 0.08);
+  box-shadow: 0 0 12px var(--color-accent-glow);
+}
+.ship-card-name {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text-bright);
+}
+.ship-card-class {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  margin-top: 2px;
+}
+.ship-card-sector {
+  font-size: 12px;
+  color: var(--color-accent);
+  margin-top: 4px;
+}
+.ship-card-crew {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  margin-top: 2px;
+}
+
+.create-ship-btn {
+  margin-top: 12px;
+}
+
+/* Station Grid */
+.stations-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.station-card {
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 20px 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.station-card:hover {
+  border-color: var(--color-accent);
+  background: rgba(0, 170, 255, 0.05);
+  box-shadow: 0 0 16px var(--color-accent-glow);
+  transform: translateY(-2px);
+}
+.station-card.occupied {
+  border-color: var(--color-warn);
+  opacity: 0.7;
+}
+.station-card.occupied:hover {
+  border-color: var(--color-warn);
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
+}
+
+.station-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.station-name {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-text-bright);
+}
+
+.station-desc {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  line-height: 1.4;
+}
+
+.station-occupied-label {
+  font-size: 10px;
+  color: var(--color-warn);
+  letter-spacing: 1px;
+}
+
+.station-select-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATION FRAME (shared layout for all stations)
+   ══════════════════════════════════════════════════════════ */
+
+#screen-station {
+  flex-direction: column;
+}
+
+/* Top nav bar */
+.station-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-bg-dark);
+  border-bottom: 1px solid var(--color-border);
+  padding: 8px 16px;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+
+.station-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.station-badge {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-bg);
+  background: var(--color-accent);
+  padding: 3px 10px;
+  border-radius: 3px;
+}
+
+.station-ship-name {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-bright);
+  letter-spacing: 1px;
+}
+
+.station-sector-label {
+  font-size: 12px;
+  color: var(--color-text-dim);
+}
+
+.station-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.station-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-dim);
+}
+
+.station-nav-btn {
+  padding: 5px 12px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+}
+
+/* Station content area */
+.station-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Side panels (used by some stations) */
+.side-panel {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--color-bg-dark);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+  overflow-y: auto;
+}
+.side-panel.right {
+  border-right: none;
+  border-left: 1px solid var(--color-border);
+}
+
+/* Center area */
+.center-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+  overflow: hidden;
+}
+
+/* Bottom strip (helm controls, etc.) */
+.bottom-strip {
+  background: var(--color-bg-dark);
+  border-top: 1px solid var(--color-border);
+  padding: 10px 16px;
+  flex-shrink: 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ── Power / Shield bars ── */
+.system-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.system-row-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.system-row-value {
+  color: var(--color-accent);
+}
+
+/* ── Helm station ── */
+.helm-compass {
+  width: 120px;
+  height: 120px;
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px var(--color-accent-glow);
+}
+.helm-heading-value {
+  font-size: 24px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  color: var(--color-accent);
+}
+.helm-heading-unit {
+  font-size: 11px;
+  color: var(--color-text-dim);
+  text-align: center;
+}
+.helm-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+.helm-dir-btn {
+  padding: 10px 6px;
+  font-size: 16px;
+  text-align: center;
+}
+.helm-speed-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Tactical station ── */
+.tactical-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.target-card {
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.target-card:hover { border-color: var(--color-accent); }
+.target-card.selected { border-color: var(--color-danger); }
+.target-name { font-size: 13px; color: var(--color-text-bright); }
+.target-distance { font-size: 11px; color: var(--color-text-dim); }
+
+.weapon-fire-btn {
+  width: 100%;
+  padding: 12px;
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+.weapon-fire-btn:hover {
+  background: var(--color-danger);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(255, 50, 50, 0.5);
+}
+
+/* ── Engineering station ── */
+.power-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.power-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.power-slider-label {
+  width: 90px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-text-dim);
+  flex-shrink: 0;
+}
+.power-slider-input {
+  flex: 1;
+  height: 4px;
+  background: var(--color-border);
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  padding: 0;
+  border: none;
+}
+.power-slider-val {
+  width: 36px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--color-accent);
+}
+
+/* ── Captain station ── */
+.captain-overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── Comms station ── */
+.comms-log {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+.comms-message {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 3px;
+}
+.comms-message .sender {
+  color: var(--color-accent);
+  font-weight: bold;
+  margin-right: 6px;
+}
+.comms-message .time {
+  color: var(--color-text-dim);
+  font-size: 10px;
+  margin-left: 6px;
+}
+.comms-message.crew { background: rgba(0, 170, 255, 0.05); }
+.comms-message.hail { background: rgba(255, 136, 0, 0.08); border-left: 2px solid var(--color-accent-3); }
+.comms-message.system { color: var(--color-text-dim); font-style: italic; }
+
+.comms-input-area {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.comms-input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.comms-send-btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+}
+
+.hail-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hail-ship-select {
+  width: 100%;
+}

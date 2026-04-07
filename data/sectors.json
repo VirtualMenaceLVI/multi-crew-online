@@ -1,0 +1,404 @@
+{
+  "sectors": [
+    {
+      "id": "A1",
+      "name": "Alpha Sector 1",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "A1-P1", "name": "Veridian III", "type": "M-Class", "x": 200, "y": 300, "radius": 40, "color": "#4a9e6b", "description": "A lush green world with rich biosphere." },
+        { "id": "A1-P2", "name": "Arcturis", "type": "D-Class", "x": 750, "y": 150, "radius": 25, "color": "#b87333", "description": "A barren desert world rich in dilithium ore." }
+      ],
+      "asteroids": [
+        { "id": "A1-A1", "x": 400, "y": 500, "radius": 8 },
+        { "id": "A1-A2", "x": 420, "y": 520, "radius": 5 },
+        { "id": "A1-A3", "x": 380, "y": 490, "radius": 6 },
+        { "id": "A1-A4", "x": 350, "y": 540, "radius": 10 },
+        { "id": "A1-A5", "x": 600, "y": 700, "radius": 7 },
+        { "id": "A1-A6", "x": 620, "y": 715, "radius": 4 },
+        { "id": "A1-A7", "x": 590, "y": 730, "radius": 9 }
+      ],
+      "starbase": { "id": "A1-SB1", "name": "Starbase 1", "x": 500, "y": 500, "radius": 20 }
+    },
+    {
+      "id": "A2",
+      "name": "Alpha Sector 2",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "A2-P1", "name": "Ryloth", "type": "L-Class", "x": 300, "y": 700, "radius": 35, "color": "#c45e3a", "description": "A hot tidally-locked world." },
+        { "id": "A2-P2", "name": "Ymir", "type": "H-Class", "x": 650, "y": 200, "radius": 20, "color": "#aabbcc", "description": "An icy dwarf planet on the edge of the sector." }
+      ],
+      "asteroids": [
+        { "id": "A2-A1", "x": 100, "y": 100, "radius": 12 },
+        { "id": "A2-A2", "x": 130, "y": 90, "radius": 7 },
+        { "id": "A2-A3", "x": 500, "y": 500, "radius": 8 },
+        { "id": "A2-A4", "x": 800, "y": 600, "radius": 6 },
+        { "id": "A2-A5", "x": 820, "y": 620, "radius": 5 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "A3",
+      "name": "Alpha Sector 3",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "A3-P1", "name": "Denevan", "type": "M-Class", "x": 500, "y": 400, "radius": 38, "color": "#55aa88", "description": "A colony world settled several decades ago." }
+      ],
+      "asteroids": [
+        { "id": "A3-A1", "x": 200, "y": 800, "radius": 9 },
+        { "id": "A3-A2", "x": 220, "y": 820, "radius": 6 },
+        { "id": "A3-A3", "x": 700, "y": 300, "radius": 11 },
+        { "id": "A3-A4", "x": 720, "y": 280, "radius": 5 },
+        { "id": "A3-A5", "x": 740, "y": 310, "radius": 7 },
+        { "id": "A3-A6", "x": 680, "y": 320, "radius": 8 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "A4",
+      "name": "Alpha Sector 4",
+      "width": 1000,
+      "height": 1000,
+      "planets": [],
+      "asteroids": [
+        { "id": "A4-A1", "x": 300, "y": 300, "radius": 15 },
+        { "id": "A4-A2", "x": 330, "y": 280, "radius": 8 },
+        { "id": "A4-A3", "x": 310, "y": 330, "radius": 6 },
+        { "id": "A4-A4", "x": 280, "y": 310, "radius": 12 },
+        { "id": "A4-A5", "x": 600, "y": 600, "radius": 9 },
+        { "id": "A4-A6", "x": 630, "y": 620, "radius": 7 },
+        { "id": "A4-A7", "x": 580, "y": 640, "radius": 5 },
+        { "id": "A4-A8", "x": 620, "y": 580, "radius": 10 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "A5",
+      "name": "Alpha Sector 5",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "A5-P1", "name": "Proxima II", "type": "K-Class", "x": 400, "y": 600, "radius": 28, "color": "#dd9944", "description": "A marginal world with breathable atmosphere." }
+      ],
+      "asteroids": [
+        { "id": "A5-A1", "x": 150, "y": 450, "radius": 8 },
+        { "id": "A5-A2", "x": 170, "y": 470, "radius": 6 },
+        { "id": "A5-A3", "x": 750, "y": 750, "radius": 10 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "B1",
+      "name": "Beta Sector 1",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "B1-P1", "name": "Babel", "type": "M-Class", "x": 600, "y": 400, "radius": 42, "color": "#668855", "description": "A neutral meeting point for many civilizations." },
+        { "id": "B1-P2", "name": "Rigel VII", "type": "M-Class", "x": 200, "y": 800, "radius": 36, "color": "#7a5c8a", "description": "A world of castles and fierce warriors." }
+      ],
+      "asteroids": [
+        { "id": "B1-A1", "x": 500, "y": 250, "radius": 7 },
+        { "id": "B1-A2", "x": 520, "y": 270, "radius": 5 },
+        { "id": "B1-A3", "x": 490, "y": 240, "radius": 9 }
+      ],
+      "starbase": { "id": "B1-SB1", "name": "Starbase 11", "x": 800, "y": 200, "radius": 20 }
+    },
+    {
+      "id": "B2",
+      "name": "Beta Sector 2",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "B2-P1", "name": "Argelius II", "type": "M-Class", "x": 450, "y": 450, "radius": 33, "color": "#88cc99", "description": "A peaceful planet known for hospitality." }
+      ],
+      "asteroids": [
+        { "id": "B2-A1", "x": 700, "y": 700, "radius": 11 },
+        { "id": "B2-A2", "x": 720, "y": 680, "radius": 7 },
+        { "id": "B2-A3", "x": 200, "y": 200, "radius": 5 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "B3",
+      "name": "Beta Sector 3",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "B3-P1", "name": "Cygnus IV", "type": "D-Class", "x": 300, "y": 300, "radius": 22, "color": "#cc8844", "description": "A rocky wasteland with mineral deposits." },
+        { "id": "B3-P2", "name": "Gault", "type": "M-Class", "x": 700, "y": 600, "radius": 30, "color": "#559966", "description": "Former colony, now independent settlement." }
+      ],
+      "asteroids": [
+        { "id": "B3-A1", "x": 500, "y": 100, "radius": 8 },
+        { "id": "B3-A2", "x": 530, "y": 120, "radius": 5 },
+        { "id": "B3-A3", "x": 100, "y": 600, "radius": 9 },
+        { "id": "B3-A4", "x": 120, "y": 620, "radius": 6 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "B4",
+      "name": "Beta Sector 4",
+      "width": 1000,
+      "height": 1000,
+      "planets": [],
+      "asteroids": [
+        { "id": "B4-A1", "x": 400, "y": 400, "radius": 14 },
+        { "id": "B4-A2", "x": 430, "y": 380, "radius": 8 },
+        { "id": "B4-A3", "x": 410, "y": 430, "radius": 6 },
+        { "id": "B4-A4", "x": 370, "y": 410, "radius": 10 },
+        { "id": "B4-A5", "x": 450, "y": 420, "radius": 5 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "B5",
+      "name": "Beta Sector 5",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "B5-P1", "name": "Tarsus IV", "type": "M-Class", "x": 550, "y": 550, "radius": 37, "color": "#669944", "description": "An agricultural colony world." }
+      ],
+      "asteroids": [
+        { "id": "B5-A1", "x": 200, "y": 200, "radius": 7 },
+        { "id": "B5-A2", "x": 800, "y": 800, "radius": 9 },
+        { "id": "B5-A3", "x": 810, "y": 820, "radius": 5 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "C1",
+      "name": "Gamma Sector 1",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "C1-P1", "name": "Omicron Ceti III", "type": "M-Class", "x": 350, "y": 500, "radius": 39, "color": "#55bb77", "description": "A spore-filled world with unusual properties." }
+      ],
+      "asteroids": [
+        { "id": "C1-A1", "x": 700, "y": 400, "radius": 8 },
+        { "id": "C1-A2", "x": 720, "y": 420, "radius": 5 },
+        { "id": "C1-A3", "x": 100, "y": 800, "radius": 11 }
+      ],
+      "starbase": { "id": "C1-SB1", "name": "Starbase 25", "x": 200, "y": 200, "radius": 20 }
+    },
+    {
+      "id": "C2",
+      "name": "Gamma Sector 2",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "C2-P1", "name": "Halkan", "type": "M-Class", "x": 600, "y": 300, "radius": 31, "color": "#448866", "description": "A world with vast dilithium deposits, pacifist people." },
+        { "id": "C2-P2", "name": "Ekos", "type": "M-Class", "x": 200, "y": 600, "radius": 34, "color": "#6677aa", "description": "A twin world to Zeon in the same system." }
+      ],
+      "asteroids": [
+        { "id": "C2-A1", "x": 800, "y": 800, "radius": 9 },
+        { "id": "C2-A2", "x": 820, "y": 780, "radius": 6 },
+        { "id": "C2-A3", "x": 500, "y": 500, "radius": 7 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "C3",
+      "name": "Gamma Sector 3",
+      "width": 1000,
+      "height": 1000,
+      "planets": [],
+      "asteroids": [
+        { "id": "C3-A1", "x": 300, "y": 400, "radius": 13 },
+        { "id": "C3-A2", "x": 320, "y": 380, "radius": 7 },
+        { "id": "C3-A3", "x": 340, "y": 410, "radius": 5 },
+        { "id": "C3-A4", "x": 600, "y": 700, "radius": 10 },
+        { "id": "C3-A5", "x": 620, "y": 720, "radius": 6 },
+        { "id": "C3-A6", "x": 580, "y": 690, "radius": 8 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "C4",
+      "name": "Gamma Sector 4",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "C4-P1", "name": "Mestiko", "type": "M-Class", "x": 500, "y": 350, "radius": 36, "color": "#77aa55", "description": "Recovering from an environmental disaster." }
+      ],
+      "asteroids": [
+        { "id": "C4-A1", "x": 100, "y": 100, "radius": 9 },
+        { "id": "C4-A2", "x": 900, "y": 900, "radius": 7 },
+        { "id": "C4-A3", "x": 750, "y": 200, "radius": 11 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "C5",
+      "name": "Gamma Sector 5",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "C5-P1", "name": "Janus VI", "type": "D-Class", "x": 400, "y": 700, "radius": 27, "color": "#aa8855", "description": "A mining colony with extensive tunnels." },
+        { "id": "C5-P2", "name": "Triacus", "type": "M-Class", "x": 700, "y": 350, "radius": 32, "color": "#66aa77", "description": "Archaeologist site with unusual history." }
+      ],
+      "asteroids": [
+        { "id": "C5-A1", "x": 200, "y": 400, "radius": 8 },
+        { "id": "C5-A2", "x": 600, "y": 100, "radius": 6 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "D1",
+      "name": "Delta Sector 1",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "D1-P1", "name": "Tantalus V", "type": "D-Class", "x": 250, "y": 250, "radius": 24, "color": "#997755", "description": "Former penal colony in a remote location." }
+      ],
+      "asteroids": [
+        { "id": "D1-A1", "x": 600, "y": 600, "radius": 12 },
+        { "id": "D1-A2", "x": 630, "y": 580, "radius": 7 },
+        { "id": "D1-A3", "x": 610, "y": 630, "radius": 5 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "D2",
+      "name": "Delta Sector 2",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "D2-P1", "name": "Pyris VII", "type": "K-Class", "x": 500, "y": 500, "radius": 29, "color": "#bb8866", "description": "A stormy world with mysterious energy readings." },
+        { "id": "D2-P2", "name": "Neural", "type": "M-Class", "x": 750, "y": 750, "radius": 35, "color": "#55aa66", "description": "Primitive inhabited world with interference issues." }
+      ],
+      "asteroids": [
+        { "id": "D2-A1", "x": 200, "y": 700, "radius": 8 },
+        { "id": "D2-A2", "x": 100, "y": 100, "radius": 10 },
+        { "id": "D2-A3", "x": 120, "y": 120, "radius": 6 }
+      ],
+      "starbase": { "id": "D2-SB1", "name": "Starbase 47", "x": 300, "y": 300, "radius": 20 }
+    },
+    {
+      "id": "D3",
+      "name": "Delta Sector 3",
+      "width": 1000,
+      "height": 1000,
+      "planets": [],
+      "asteroids": [
+        { "id": "D3-A1", "x": 400, "y": 300, "radius": 16 },
+        { "id": "D3-A2", "x": 420, "y": 280, "radius": 9 },
+        { "id": "D3-A3", "x": 380, "y": 320, "radius": 7 },
+        { "id": "D3-A4", "x": 440, "y": 310, "radius": 5 },
+        { "id": "D3-A5", "x": 360, "y": 290, "radius": 11 },
+        { "id": "D3-A6", "x": 700, "y": 800, "radius": 8 },
+        { "id": "D3-A7", "x": 720, "y": 820, "radius": 6 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "D4",
+      "name": "Delta Sector 4",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "D4-P1", "name": "Capella IV", "type": "M-Class", "x": 450, "y": 550, "radius": 40, "color": "#66bb55", "description": "A mineral-rich world with a feudal society." }
+      ],
+      "asteroids": [
+        { "id": "D4-A1", "x": 800, "y": 300, "radius": 7 },
+        { "id": "D4-A2", "x": 200, "y": 800, "radius": 9 },
+        { "id": "D4-A3", "x": 220, "y": 820, "radius": 5 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "D5",
+      "name": "Delta Sector 5",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "D5-P1", "name": "Tholus", "type": "H-Class", "x": 300, "y": 400, "radius": 21, "color": "#cc9933", "description": "An extreme environment world." },
+        { "id": "D5-P2", "name": "Dramia II", "type": "M-Class", "x": 700, "y": 600, "radius": 34, "color": "#558844", "description": "A colony world recovering from an epidemic." }
+      ],
+      "asteroids": [
+        { "id": "D5-A1", "x": 500, "y": 200, "radius": 8 },
+        { "id": "D5-A2", "x": 100, "y": 500, "radius": 6 },
+        { "id": "D5-A3", "x": 900, "y": 100, "radius": 10 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "E1",
+      "name": "Epsilon Sector 1",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "E1-P1", "name": "Talos IV", "type": "M-Class", "x": 500, "y": 500, "radius": 44, "color": "#559977", "description": "A forbidden world under General Order 7." }
+      ],
+      "asteroids": [
+        { "id": "E1-A1", "x": 800, "y": 700, "radius": 9 },
+        { "id": "E1-A2", "x": 200, "y": 300, "radius": 11 },
+        { "id": "E1-A3", "x": 220, "y": 320, "radius": 7 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "E2",
+      "name": "Epsilon Sector 2",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "E2-P1", "name": "Exo III", "type": "D-Class", "x": 300, "y": 700, "radius": 26, "color": "#aabbcc", "description": "A frozen world with ancient android technology." }
+      ],
+      "asteroids": [
+        { "id": "E2-A1", "x": 600, "y": 400, "radius": 8 },
+        { "id": "E2-A2", "x": 620, "y": 420, "radius": 5 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "E3",
+      "name": "Epsilon Sector 3",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "E3-P1", "name": "Scalos", "type": "M-Class", "x": 400, "y": 400, "radius": 32, "color": "#66aa88", "description": "A world where time moves at a different rate." },
+        { "id": "E3-P2", "name": "Sarpeidon", "type": "M-Class", "x": 700, "y": 700, "radius": 38, "color": "#7799aa", "description": "A world with a vast historical archive." }
+      ],
+      "asteroids": [
+        { "id": "E3-A1", "x": 100, "y": 500, "radius": 7 },
+        { "id": "E3-A2", "x": 900, "y": 200, "radius": 9 },
+        { "id": "E3-A3", "x": 500, "y": 800, "radius": 6 }
+      ],
+      "starbase": { "id": "E3-SB1", "name": "Starbase 99", "x": 150, "y": 150, "radius": 20 }
+    },
+    {
+      "id": "E4",
+      "name": "Epsilon Sector 4",
+      "width": 1000,
+      "height": 1000,
+      "planets": [],
+      "asteroids": [
+        { "id": "E4-A1", "x": 300, "y": 600, "radius": 14 },
+        { "id": "E4-A2", "x": 320, "y": 580, "radius": 8 },
+        { "id": "E4-A3", "x": 340, "y": 610, "radius": 6 },
+        { "id": "E4-A4", "x": 280, "y": 620, "radius": 10 },
+        { "id": "E4-A5", "x": 700, "y": 400, "radius": 7 },
+        { "id": "E4-A6", "x": 720, "y": 420, "radius": 5 }
+      ],
+      "starbase": null
+    },
+    {
+      "id": "E5",
+      "name": "Epsilon Sector 5",
+      "width": 1000,
+      "height": 1000,
+      "planets": [
+        { "id": "E5-P1", "name": "Marcos XII", "type": "M-Class", "x": 550, "y": 450, "radius": 36, "color": "#77bb66", "description": "Colony world at the edge of known space." },
+        { "id": "E5-P2", "name": "Velara III", "type": "L-Class", "x": 250, "y": 750, "radius": 23, "color": "#aacc88", "description": "A terraforming project world." }
+      ],
+      "asteroids": [
+        { "id": "E5-A1", "x": 800, "y": 100, "radius": 8 },
+        { "id": "E5-A2", "x": 820, "y": 120, "radius": 5 },
+        { "id": "E5-A3", "x": 100, "y": 900, "radius": 9 }
+      ],
+      "starbase": null
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "ships": [
+    {
+      "id": "ship-pioneer",
+      "name": "Pioneer",
+      "class": "Explorer",
+      "sector": "A1",
+      "position": {
+        "x": 500,
+        "y": 500
+      },
+      "heading": 0,
+      "velocity": {
+        "x": 0,
+        "y": 0
+      },
+      "speed": 0,
+      "maxSpeed": 100,
+      "shields": {
+        "fore": 100,
+        "aft": 100,
+        "port": 100,
+        "starboard": 100,
+        "active": true
+      },
+      "weapons": {
+        "phasers": {
+          "banks": 4,
+          "power": 100,
+          "online": true
+        },
+        "torpedoes": {
+          "count": 24,
+          "loaded": true
+        }
+      },
+      "hull": 100,
+      "power": {
+        "total": 1000,
+        "engines": 300,
+        "shields": 200,
+        "weapons": 200,
+        "sensors": 150,
+        "life_support": 150
+      },
+      "status": "docked",
+      "crew": [
+        {
+          "playerId": "player-admin",
+          "station": "tactical"
+        }
+      ],
+      "crewCapacity": 6,
+      "lastUpdated": "2026-04-07T09:19:13.304Z"
+    },
+    {
+      "id": "ship-defiant",
+      "name": "Defiant",
+      "class": "Warship",
+      "sector": "A1",
+      "position": {
+        "x": 250,
+        "y": 350
+      },
+      "heading": 45,
+      "velocity": {
+        "x": 15,
+        "y": 15
+      },
+      "speed": 21,
+      "maxSpeed": 120,
+      "shields": {
+        "fore": 85,
+        "aft": 90,
+        "port": 75,
+        "starboard": 80,
+        "active": true
+      },
+      "weapons": {
+        "phasers": {
+          "banks": 6,
+          "power": 100,
+          "online": true
+        },
+        "torpedoes": {
+          "count": 36,
+          "loaded": true
+        }
+      },
+      "hull": 92,
+      "power": {
+        "total": 1200,
+        "engines": 400,
+        "shields": 300,
+        "weapons": 300,
+        "sensors": 100,
+        "life_support": 100
+      },
+      "status": "in-transit",
+      "crew": [],
+      "crewCapacity": 6,
+      "lastUpdated": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}

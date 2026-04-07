@@ -1,0 +1,316 @@
+/* ============================================================
+   maps.css - Sector map and local viewscreen styles
+   ============================================================ */
+
+/* ══════════════════════════════════════════════════════════
+   SECTOR MAP SCREEN
+   ══════════════════════════════════════════════════════════ */
+
+#screen-sector-map {
+  background: var(--color-bg);
+  flex-direction: column;
+}
+
+.sector-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-bg-dark);
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px 16px;
+  flex-shrink: 0;
+}
+
+.sector-map-title {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.sector-map-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: auto;
+}
+
+.sector-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--color-border-bright);
+  box-shadow: 0 0 30px rgba(0, 100, 200, 0.2);
+}
+
+.sector-grid-row {
+  display: flex;
+}
+
+.sector-cell {
+  width: 120px;
+  height: 80px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: background var(--transition), border-color var(--transition);
+  overflow: hidden;
+  background: var(--color-bg-dark);
+}
+
+.sector-cell:hover {
+  background: rgba(0, 100, 200, 0.15);
+  border-color: var(--color-accent);
+  z-index: 1;
+}
+
+.sector-cell.current {
+  background: rgba(0, 170, 255, 0.12);
+  border-color: var(--color-accent);
+}
+
+.sector-cell-id {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-bright);
+  letter-spacing: 1px;
+}
+
+.sector-cell-name {
+  font-size: 9px;
+  color: var(--color-text-dim);
+  text-align: center;
+  padding: 0 4px;
+  letter-spacing: 0.5px;
+}
+
+.sector-cell-ships {
+  font-size: 9px;
+  color: var(--color-accent);
+  margin-top: 3px;
+}
+
+/* Dots for planets/starbases */
+.sector-cell-indicators {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.sector-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.sector-dot.planet  { background: var(--color-accent-2); }
+.sector-dot.base    { background: #5555ff; }
+.sector-dot.asteroids { background: #888; width: 4px; height: 4px; }
+
+/* Column/Row labels */
+.sector-col-labels,
+.sector-row-labels {
+  display: flex;
+}
+
+.sector-col-label {
+  width: 120px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--color-text-dim);
+  padding: 4px 0;
+  letter-spacing: 1px;
+}
+
+.sector-row-label {
+  width: 24px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--color-text-dim);
+  letter-spacing: 1px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LOCAL MAP / VIEWSCREEN
+   ══════════════════════════════════════════════════════════ */
+
+/* The viewscreen panel wraps the canvas box */
+.viewscreen-outer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 8px;
+}
+
+/* The bezel around the viewscreen */
+.viewscreen-bezel {
+  position: relative;
+  background: #000;
+  border: 6px solid #1a2e44;
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px var(--color-border),
+    0 0 30px rgba(0, 100, 200, 0.4),
+    inset 0 0 60px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+
+.viewscreen-bezel::before {
+  content: 'VIEWSCREEN';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: rgba(0, 170, 255, 0.4);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Corner accents */
+.viewscreen-bezel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(0, 170, 255, 0.1);
+  border-radius: 2px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* The actual canvas */
+#viewscreen-canvas {
+  display: block;
+  background: #000005;
+  cursor: crosshair;
+}
+
+/* Scanline overlay for the viewscreen */
+.viewscreen-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.12) 3px,
+    rgba(0, 0, 0, 0.12) 4px
+  );
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Corner decorations */
+.viewscreen-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: var(--color-accent);
+  border-style: solid;
+  opacity: 0.6;
+  z-index: 6;
+}
+.viewscreen-corner.tl { top: 4px; left: 4px; border-width: 1px 0 0 1px; }
+.viewscreen-corner.tr { top: 4px; right: 4px; border-width: 1px 1px 0 0; }
+.viewscreen-corner.bl { bottom: 4px; left: 4px; border-width: 0 0 1px 1px; }
+.viewscreen-corner.br { bottom: 4px; right: 4px; border-width: 0 1px 1px 0; }
+
+/* Coordinates display */
+.viewscreen-coords {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-size: 9px;
+  color: rgba(0, 170, 255, 0.6);
+  letter-spacing: 1px;
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* Range indicator */
+.viewscreen-range {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 9px;
+  color: rgba(0, 170, 255, 0.6);
+  letter-spacing: 1px;
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* Contact popup (when hovering a ship on viewscreen) */
+.viewscreen-contact-info {
+  position: absolute;
+  background: rgba(10, 22, 40, 0.92);
+  border: 1px solid var(--color-accent);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 10;
+  min-width: 150px;
+  box-shadow: 0 0 12px var(--color-accent-glow);
+  display: none;
+}
+.viewscreen-contact-info.visible { display: block; }
+.viewscreen-contact-name {
+  font-weight: bold;
+  color: var(--color-text-bright);
+  margin-bottom: 3px;
+}
+.viewscreen-contact-detail {
+  color: var(--color-text-dim);
+  font-size: 11px;
+}
+
+/* ── Local map outer wrapper (the station's map section) ── */
+.local-map-area {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.local-map-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  background: var(--color-bg-dark);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.contact-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: border-color var(--transition);
+}
+.contact-list-item:hover {
+  border-color: var(--color-accent);
+}
+.contact-list-item .ship-name { color: var(--color-text-bright); }
+.contact-list-item .ship-dist { color: var(--color-text-dim); font-size: 10px; }
