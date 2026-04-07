@@ -60,8 +60,13 @@ const DEFAULT_SHIPS = [
  */
 class DevDataManager {
   constructor() {
-    this._ensureDataDir();
-    this._ensureDefaultData();
+    try {
+      this._ensureDataDir();
+      this._ensureDefaultData();
+    } catch (err) {
+      console.error('[DevDataManager] FATAL ERROR during initialization:', err);
+      throw err;
+    }
   }
 
   _ensureDataDir() {
