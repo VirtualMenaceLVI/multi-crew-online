@@ -1,0 +1,24 @@
+{
+  "name": "multi-crew-online",
+  "version": "0.1.0",
+  "description": "A 2D multiplayer space bridge crew game inspired by cooperative starship command",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.3.2",
+    "uuid": "^9.0.0"
+  },
+  "keywords": [
+    "game",
+    "space",
+    "multiplayer",
+    "browser"
+  ],
+  "author": "VirtualMenaceLVI",
+  "license": "MIT"
+}
