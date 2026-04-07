@@ -1,8 +1,8 @@
 {
   "ships": [
     {
-      "id": "ship-pioneer",
-      "name": "Pioneer",
+      "id": "ship-horizon",
+      "name": "Horizon",
       "class": "Explorer",
       "sector": "A1",
       "position": {
@@ -44,36 +44,31 @@
         "life_support": 150
       },
       "status": "docked",
-      "crew": [
-        {
-          "playerId": "player-admin",
-          "station": "tactical"
-        }
-      ],
+      "crew": [],
       "crewCapacity": 6,
-      "lastUpdated": "2026-04-07T09:19:13.304Z"
+      "lastUpdated": "2026-04-07T11:35:14.872Z"
     },
     {
-      "id": "ship-defiant",
-      "name": "Defiant",
+      "id": "ship-destiny",
+      "name": "Destiny",
       "class": "Warship",
       "sector": "A1",
       "position": {
-        "x": 250,
-        "y": 350
+        "x": 300,
+        "y": 400
       },
-      "heading": 45,
+      "heading": 0,
       "velocity": {
-        "x": 15,
-        "y": 15
+        "x": 0,
+        "y": 0
       },
-      "speed": 21,
+      "speed": 0,
       "maxSpeed": 120,
       "shields": {
-        "fore": 85,
-        "aft": 90,
-        "port": 75,
-        "starboard": 80,
+        "fore": 100,
+        "aft": 100,
+        "port": 100,
+        "starboard": 100,
         "active": true
       },
       "weapons": {
@@ -87,7 +82,7 @@
           "loaded": true
         }
       },
-      "hull": 92,
+      "hull": 100,
       "power": {
         "total": 1200,
         "engines": 400,
@@ -96,10 +91,10 @@
         "sensors": 100,
         "life_support": 100
       },
-      "status": "in-transit",
+      "status": "docked",
       "crew": [],
       "crewCapacity": 6,
-      "lastUpdated": "2024-01-01T00:00:00.000Z"
+      "lastUpdated": "2026-04-07T11:35:14.872Z"
     }
   ]
 }

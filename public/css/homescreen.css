@@ -192,3 +192,20 @@
   letter-spacing: 1px;
   opacity: 0.8;
 }
+
+/* ── Discord Notice ── */
+.discord-notice {
+  background: rgba(88, 101, 242, 0.12);
+  border: 1px solid rgba(88, 101, 242, 0.35);
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 12px;
+  color: var(--color-text-dim);
+  text-align: center;
+  letter-spacing: 0.5px;
+  max-width: 380px;
+  line-height: 1.5;
+}
+.discord-notice strong {
+  color: #7289da;
+}

@@ -5,6 +5,55 @@ const path = require('path');
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 
+// ── Default seed data ─────────────────────────────────────────────────────────
+
+const DEFAULT_SHIPS = [
+  {
+    id: 'ship-horizon',
+    name: 'Horizon',
+    class: 'Explorer',
+    sector: 'A1',
+    position: { x: 500, y: 500 },
+    heading: 0,
+    velocity: { x: 0, y: 0 },
+    speed: 0,
+    maxSpeed: 100,
+    shields: { fore: 100, aft: 100, port: 100, starboard: 100, active: true },
+    weapons: {
+      phasers: { banks: 4, power: 100, online: true },
+      torpedoes: { count: 24, loaded: true }
+    },
+    hull: 100,
+    power: { total: 1000, engines: 300, shields: 200, weapons: 200, sensors: 150, life_support: 150 },
+    status: 'docked',
+    crew: [],
+    crewCapacity: 6,
+    lastUpdated: new Date().toISOString()
+  },
+  {
+    id: 'ship-destiny',
+    name: 'Destiny',
+    class: 'Warship',
+    sector: 'A1',
+    position: { x: 300, y: 400 },
+    heading: 0,
+    velocity: { x: 0, y: 0 },
+    speed: 0,
+    maxSpeed: 120,
+    shields: { fore: 100, aft: 100, port: 100, starboard: 100, active: true },
+    weapons: {
+      phasers: { banks: 6, power: 100, online: true },
+      torpedoes: { count: 36, loaded: true }
+    },
+    hull: 100,
+    power: { total: 1200, engines: 400, shields: 300, weapons: 300, sensors: 100, life_support: 100 },
+    status: 'docked',
+    crew: [],
+    crewCapacity: 6,
+    lastUpdated: new Date().toISOString()
+  }
+];
+
 /**
  * DevDataManager - handles all JSON file read/write operations.
  * This abstraction layer makes it easy to replace with a real database later.
@@ -12,11 +61,38 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 class DevDataManager {
   constructor() {
     this._ensureDataDir();
+    this._ensureDefaultData();
   }
 
   _ensureDataDir() {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  }
+
+  /**
+   * Seed default data if files are missing or empty.
+   * Runs on every startup so Railway's ephemeral filesystem always has base data.
+   */
+  _ensureDefaultData() {
+    // Ships: seed if empty
+    const shipsData = this.getShips();
+    if (!shipsData || shipsData.ships.length === 0) {
+      this._write('ships.json', { ships: DEFAULT_SHIPS.map(s => ({ ...s, lastUpdated: new Date().toISOString() })) });
+      console.log('[DevDataManager] Seeded default ships (Horizon, Destiny).');
+    }
+
+    // Players: ensure file exists with proper structure
+    const playersData = this.getPlayers();
+    if (!playersData) {
+      this._write('players.json', { players: [], sessions: [] });
+    }
+
+    // Communications: ensure hailChats field exists
+    const commsData = this.getCommunications();
+    if (!commsData.hailChats) {
+      commsData.hailChats = {};
+      this._write('communications.json', commsData);
     }
   }
 
@@ -57,7 +133,7 @@ class DevDataManager {
 
   getPlayerByUsername(username) {
     const data = this.getPlayers();
-    return data.players.find(p => p.username === username) || null;
+    return data.players.find(p => p.username.toLowerCase() === username.toLowerCase()) || null;
   }
 
   getPlayerById(id) {
@@ -159,7 +235,7 @@ class DevDataManager {
   // ── Communications ────────────────────────────────────────────────────────
 
   getCommunications() {
-    return this._read('communications.json') || { crewChats: {}, hailLog: [], broadcastLog: [] };
+    return this._read('communications.json') || { crewChats: {}, hailLog: [], hailChats: {}, broadcastLog: [] };
   }
 
   getCrewChat(shipId) {
@@ -179,6 +255,8 @@ class DevDataManager {
     return message;
   }
 
+  // ── Hails ─────────────────────────────────────────────────────────────────
+
   addHail(hail) {
     const data = this.getCommunications();
     data.hailLog.push(hail);
@@ -189,10 +267,45 @@ class DevDataManager {
     return hail;
   }
 
+  getHailById(id) {
+    const data = this.getCommunications();
+    return data.hailLog.find(h => h.id === id) || null;
+  }
+
   getHailsForShip(shipId) {
     const data = this.getCommunications();
     return data.hailLog.filter(h => h.fromShipId === shipId || h.toShipId === shipId);
   }
+
+  updateHail(id, updates) {
+    const data = this.getCommunications();
+    const idx = data.hailLog.findIndex(h => h.id === id);
+    if (idx === -1) return null;
+    data.hailLog[idx] = { ...data.hailLog[idx], ...updates };
+    this._write('communications.json', data);
+    return data.hailLog[idx];
+  }
+
+  // ── Hail Chat Channels ────────────────────────────────────────────────────
+
+  getHailChat(channelId) {
+    const data = this.getCommunications();
+    return (data.hailChats || {})[channelId] || [];
+  }
+
+  addHailChatMessage(channelId, message) {
+    const data = this.getCommunications();
+    if (!data.hailChats) data.hailChats = {};
+    if (!data.hailChats[channelId]) data.hailChats[channelId] = [];
+    data.hailChats[channelId].push(message);
+    if (data.hailChats[channelId].length > 200) {
+      data.hailChats[channelId] = data.hailChats[channelId].slice(-200);
+    }
+    this._write('communications.json', data);
+    return message;
+  }
+
+  // ── Broadcast ─────────────────────────────────────────────────────────────
 
   addBroadcast(msg) {
     const data = this.getCommunications();

@@ -1,7 +1,6 @@
 /**
  * auth.js
  * Handles homescreen authentication UI.
- * Dev mode: username "admin" + password "admin" grants access.
  */
 
 const Auth = (() => {
