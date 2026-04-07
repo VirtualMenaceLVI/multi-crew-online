@@ -17,20 +17,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting for all API routes
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300,                  // max 300 requests per window per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later.' }
-});
-app.use('/api', apiLimiter);
-
-// Stricter limit for auth endpoints to prevent brute-force
+// Auth-only rate limiter to prevent brute-force login attempts.
+// The general API rate limiter has been removed — the game's 1-second polling
+// and multi-crew physics ticks generate far too many legitimate requests for a
+// blanket IP limit to be useful without causing real gameplay problems.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many authentication attempts, please try again later.' }

@@ -253,23 +253,125 @@ router.post('/ships/:id/leave', requireAuth, (req, res) => {
 
 /**
  * POST /api/ships/:id/tick
- * Advance ship physics (called by client polling)
+ * Advance ship physics (called by client polling).
+ * Handles sector-boundary crossing automatically.
  */
 router.post('/ships/:id/tick', requireAuth, (req, res) => {
   const ship = db.getShipById(req.params.id);
   if (!ship) return res.status(404).json({ error: 'Ship not found' });
 
+  // Nothing to do if stopped or docked
+  if (!ship.velocity || (ship.velocity.x === 0 && ship.velocity.y === 0)) {
+    return res.json({ ship, sectorCrossed: false });
+  }
+
   const { deltaSeconds } = req.body;
   const dt = Math.min(parseFloat(deltaSeconds) || 0.5, 5); // cap at 5s
 
-  const pos = { ...ship.position };
-  const vel = { ...ship.velocity };
+  const pos = { x: ship.position.x + ship.velocity.x * dt,
+                y: ship.position.y + ship.velocity.y * dt };
 
-  pos.x = Math.max(0, Math.min(1000, pos.x + vel.x * dt));
-  pos.y = Math.max(0, Math.min(1000, pos.y + vel.y * dt));
+  // ── Sector grid: rows A-E (index 0-4), cols 1-5 (index 0-4) ─────────────
+  const ROWS = 5; // A-E
+  const COLS = 5; // 1-5
+  let sRow = ship.sector.charCodeAt(0) - 65;      // 'A'→0 … 'E'→4
+  let sCol = parseInt(ship.sector.slice(1), 10) - 1; // '1'→0 … '5'→4
+  let crossed = false;
 
-  const updated = db.updateShip(ship.id, { position: pos });
+  if (pos.x < 0) {
+    if (sCol > 0) { sCol--; pos.x += 1000; crossed = true; }
+    else pos.x = 0;
+  } else if (pos.x > 1000) {
+    if (sCol < COLS - 1) { sCol++; pos.x -= 1000; crossed = true; }
+    else pos.x = 1000;
+  }
+
+  if (pos.y < 0) {
+    if (sRow > 0) { sRow--; pos.y += 1000; crossed = true; }
+    else pos.y = 0;
+  } else if (pos.y > 1000) {
+    if (sRow < ROWS - 1) { sRow++; pos.y -= 1000; crossed = true; }
+    else pos.y = 1000;
+  }
+
+  const updates = { position: pos };
+  if (crossed) {
+    updates.sector = String.fromCharCode(65 + sRow) + (sCol + 1);
+  }
+
+  const updated = db.updateShip(ship.id, updates);
+  res.json({ ship: updated, sectorCrossed: crossed });
+});
+
+/**
+ * POST /api/ships/:id/warp
+ * Warp drive: instantly relocate ship to a target sector.
+ * Body: { targetSector }
+ */
+router.post('/ships/:id/warp', requireAuth, (req, res) => {
+  const ship = db.getShipById(req.params.id);
+  if (!ship) return res.status(404).json({ error: 'Ship not found' });
+
+  const { targetSector } = req.body;
+  if (!targetSector) return res.status(400).json({ error: 'Target sector required' });
+  if (targetSector === ship.sector) return res.status(400).json({ error: 'Already in that sector' });
+
+  const sector = db.getSectorById(targetSector);
+  if (!sector) return res.status(404).json({ error: 'Target sector not found' });
+
+  const updated = db.updateShip(ship.id, {
+    sector: targetSector,
+    position: { x: 500, y: 500 },
+    speed: 0,
+    velocity: { x: 0, y: 0 },
+    status: 'in-transit'
+  });
   res.json({ ship: updated });
+});
+
+/**
+ * POST /api/ships/:id/dock
+ * Dock at the nearest starbase or planet (must be within 80 km).
+ */
+router.post('/ships/:id/dock', requireAuth, (req, res) => {
+  const ship = db.getShipById(req.params.id);
+  if (!ship) return res.status(404).json({ error: 'Ship not found' });
+
+  const sector = db.getSectorById(ship.sector);
+  if (!sector) return res.status(404).json({ error: 'Sector not found' });
+
+  const DOCK_RANGE = 80;
+  let dockTarget = null;
+  let minDist = Infinity;
+
+  if (sector.starbase) {
+    const dx = ship.position.x - sector.starbase.x;
+    const dy = ship.position.y - sector.starbase.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist <= DOCK_RANGE && dist < minDist) { minDist = dist; dockTarget = sector.starbase.name; }
+  }
+
+  for (const planet of (sector.planets || [])) {
+    const dx = ship.position.x - planet.x;
+    const dy = ship.position.y - planet.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist <= DOCK_RANGE && dist < minDist) { minDist = dist; dockTarget = planet.name; }
+  }
+
+  // If already docked and in range, treat as a successful re-dock (idempotent)
+  if (!dockTarget) {
+    if (ship.status === 'docked') {
+      return res.json({ ship, dockedAt: 'Current berth' });
+    }
+    return res.status(400).json({ error: 'No docking target in range (must be within 80 km of a starbase or planet)' });
+  }
+
+  const updated = db.updateShip(ship.id, {
+    status: 'docked',
+    speed: 0,
+    velocity: { x: 0, y: 0 }
+  });
+  res.json({ ship: updated, dockedAt: dockTarget || 'Unknown' });
 });
 
 // ── Sector Routes ─────────────────────────────────────────────────────────────

@@ -107,6 +107,14 @@ const ApiClient = (() => {
     return request('POST', `/ships/${shipId}/tick`, { deltaSeconds });
   }
 
+  async function warpShip(shipId, targetSector) {
+    return request('POST', `/ships/${shipId}/warp`, { targetSector });
+  }
+
+  async function dockShip(shipId) {
+    return request('POST', `/ships/${shipId}/dock`);
+  }
+
   // ── Sectors ───────────────────────────────────────────────────────────────
 
   async function getSectors() {
@@ -148,7 +156,7 @@ const ApiClient = (() => {
   return {
     setToken, getToken,
     login, register, logout, getMe,
-    getShips, getShip, getShipsInSector, createShip, updateShip, joinShip, leaveShip, tickShip,
+    getShips, getShip, getShipsInSector, createShip, updateShip, joinShip, leaveShip, tickShip, warpShip, dockShip,
     getSectors, getSector,
     getCrewChat, sendCrewMessage, sendHail, getHails, getBroadcast, sendBroadcast
   };
