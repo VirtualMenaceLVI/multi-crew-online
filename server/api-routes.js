@@ -358,7 +358,11 @@ router.post('/ships/:id/dock', requireAuth, (req, res) => {
     if (dist <= DOCK_RANGE && dist < minDist) { minDist = dist; dockTarget = planet.name; }
   }
 
-  if (!dockTarget && ship.status !== 'docked') {
+  // If already docked and in range, treat as a successful re-dock (idempotent)
+  if (!dockTarget) {
+    if (ship.status === 'docked') {
+      return res.json({ ship, dockedAt: 'Current berth' });
+    }
     return res.status(400).json({ error: 'No docking target in range (must be within 80 km of a starbase or planet)' });
   }
 

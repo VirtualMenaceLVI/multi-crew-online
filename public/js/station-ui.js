@@ -200,7 +200,7 @@ const StationUI = (() => {
     const sectors = GameState.getSectors();
     const sectorOptions = sectors
       .filter(s => s.id !== ship.sector)
-      .map(s => `<option value="${_esc(s.id)}">${_esc(s.id)} — ${_esc(s.name)}</option>`)
+      .map(s => `<option value="${_escAttr(s.id)}">${_esc(s.id)} — ${_esc(s.name)}</option>`)
       .join('');
 
     container.innerHTML = `
@@ -235,7 +235,7 @@ const StationUI = (() => {
             </div>
             <div class="helm-controls-grid">
               <button class="btn helm-dir-btn" data-delta="-45">↖</button>
-              <button class="btn helm-dir-btn" data-delta="-180" title="Turn to North (0°)">N</button>
+              <button class="btn helm-dir-btn" data-absolute="0" title="Set heading to North (0°)">N</button>
               <button class="btn helm-dir-btn" data-delta="45">↗</button>
               <button class="btn helm-dir-btn" data-delta="-90">←</button>
               <button class="btn helm-dir-btn" style="opacity:0.15;cursor:default">•</button>
@@ -346,9 +346,8 @@ const StationUI = (() => {
       SoundManager.play('beep');
       const spd = parseFloat(slider.value);
       await GameState.setSpeed(spd);
-      if (spd === 0) {
-        await ApiClient.updateShip(GameState.getCurrentShip().id, { status: 'docked' });
-      } else if (GameState.getCurrentShip().status === 'docked') {
+      // Only update status when the ship is undocking from a docked state to in-transit
+      if (spd > 0 && GameState.getCurrentShip().status === 'docked') {
         await ApiClient.updateShip(GameState.getCurrentShip().id, { status: 'in-transit' });
       }
     });
@@ -358,7 +357,10 @@ const StationUI = (() => {
       slider.value = 0;
       display.textContent = '0';
       await GameState.setSpeed(0);
-      await ApiClient.updateShip(GameState.getCurrentShip().id, { status: 'docked' });
+      // Mark as stopped only if currently in-transit; do not change a docked state
+      if (GameState.getCurrentShip().status === 'in-transit') {
+        await ApiClient.updateShip(GameState.getCurrentShip().id, { status: 'stopped' });
+      }
     });
 
     // ── Heading controls ──────────────────────────────────────────────────
@@ -367,14 +369,15 @@ const StationUI = (() => {
         SoundManager.play('beep');
         const s = GameState.getCurrentShip();
         const current = s.heading || 0;
-        const delta = parseInt(btn.dataset.delta, 10);
-        let newHeading;
-        // The "N" button uses a large delta as a sentinel for "set absolute north"
-        if (Math.abs(delta) === 180 && btn.textContent.trim() === 'N') {
-          newHeading = 0;
-        } else {
-          newHeading = ((current + delta) % 360 + 360) % 360;
+        // Buttons with data-absolute set to a value snap to that absolute heading
+        if (btn.dataset.absolute !== undefined) {
+          const abs = parseInt(btn.dataset.absolute, 10);
+          document.getElementById('helm-heading-input').value = abs;
+          GameState.setHeading(abs);
+          return;
         }
+        const delta = parseInt(btn.dataset.delta, 10);
+        const newHeading = ((current + delta) % 360 + 360) % 360;
         document.getElementById('helm-heading-input').value = Math.round(newHeading);
         GameState.setHeading(newHeading);
       });
@@ -394,7 +397,9 @@ const StationUI = (() => {
         UI.showToast(`Docked at ${result.dockedAt}`, 'success');
         slider.value = 0;
         display.textContent = '0';
-      } catch { /* error shown by GameState */ }
+      } catch (err) {
+        console.error('[Helm] Dock failed:', err);
+      }
     });
 
     document.getElementById('btn-undock').addEventListener('click', async () => {
@@ -443,11 +448,13 @@ const StationUI = (() => {
         // Refresh sector dropdown to exclude new current sector
         const newSectors = GameState.getSectors()
           .filter(s => s.id !== GameState.getCurrentShip().sector)
-          .map(s => `<option value="${_esc(s.id)}">${_esc(s.id)} — ${_esc(s.name)}</option>`)
+          .map(s => `<option value="${_escAttr(s.id)}">${_esc(s.id)} — ${_esc(s.name)}</option>`)
           .join('');
         const sel = document.getElementById('warp-target-sector');
         if (sel) sel.innerHTML = `<option value="">— Select Sector —</option>${newSectors}`;
-      } catch { /* error toast already shown */ }
+      } catch (err) {
+        console.error('[Helm] Warp failed:', err);
+      }
 
       progressBar.style.display = 'none';
       progressFill.style.width = '0%';
@@ -1055,6 +1062,11 @@ const StationUI = (() => {
   function _esc(str) {
     return String(str || '')
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // Safe for use inside HTML attribute values (additionally escapes quotes)
+  function _escAttr(str) {
+    return _esc(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   return {
