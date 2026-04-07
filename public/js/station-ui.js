@@ -194,28 +194,38 @@ const StationUI = (() => {
 
   // ── HELM ──────────────────────────────────────────────────────────────────
 
+  let _warpCooldown = false;
+
   function _buildHelm(container, ship) {
+    const sectors = GameState.getSectors();
+    const sectorOptions = sectors
+      .filter(s => s.id !== ship.sector)
+      .map(s => `<option value="${_esc(s.id)}">${_esc(s.id)} — ${_esc(s.name)}</option>`)
+      .join('');
+
     container.innerHTML = `
       <div class="side-panel">
         <div class="panel">
-          <div class="panel-title">Speed</div>
+          <div class="panel-title">⚡ Speed</div>
           <div class="system-row">
             <div class="system-row-label">
               <span>Current</span>
               <span class="system-row-value" id="helm-speed-val">${Math.round(ship.speed)} km/s</span>
             </div>
             <div class="progress-bar">
-              <div class="progress-bar-fill" id="helm-speed-bar" style="width:${(ship.speed/ship.maxSpeed)*100}%"></div>
+              <div class="progress-bar-fill" id="helm-speed-bar" style="width:${(ship.speed / ship.maxSpeed) * 100}%"></div>
             </div>
           </div>
           <div class="helm-speed-bar" style="margin-top:8px">
             <input type="range" id="helm-speed-slider" min="0" max="${ship.maxSpeed}" value="${ship.speed}" style="flex:1;accent-color:var(--color-accent)">
-            <span id="helm-speed-display" class="text-accent" style="min-width:32px;font-size:12px">${Math.round(ship.speed)}</span>
+            <span id="helm-speed-display" class="text-accent" style="min-width:36px;font-size:12px">${Math.round(ship.speed)}</span>
           </div>
           <button class="btn" id="helm-set-speed" style="margin-top:8px;width:100%">SET SPEED</button>
+          <button class="btn btn-danger" id="helm-all-stop" style="margin-top:6px;width:100%">ALL STOP</button>
         </div>
+
         <div class="panel">
-          <div class="panel-title">Heading</div>
+          <div class="panel-title">🧭 Heading</div>
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
             <div class="helm-compass">
               <div>
@@ -225,43 +235,38 @@ const StationUI = (() => {
             </div>
             <div class="helm-controls-grid">
               <button class="btn helm-dir-btn" data-delta="-45">↖</button>
-              <button class="btn helm-dir-btn" data-delta="0" id="btn-turn-north">↑</button>
+              <button class="btn helm-dir-btn" data-delta="-180" title="Turn to North (0°)">N</button>
               <button class="btn helm-dir-btn" data-delta="45">↗</button>
               <button class="btn helm-dir-btn" data-delta="-90">←</button>
-              <button class="btn helm-dir-btn" style="opacity:0.2">•</button>
+              <button class="btn helm-dir-btn" style="opacity:0.15;cursor:default">•</button>
               <button class="btn helm-dir-btn" data-delta="90">→</button>
               <button class="btn helm-dir-btn" data-delta="-135">↙</button>
               <button class="btn helm-dir-btn" data-delta="180">↓</button>
               <button class="btn helm-dir-btn" data-delta="135">↘</button>
             </div>
-            <div style="display:flex;gap:8px;width:100%;align-items:center">
-              <input type="number" id="helm-heading-input" min="0" max="359" value="${Math.round(ship.heading)}" style="width:80px;text-align:center">
+            <div style="display:flex;gap:6px;width:100%;align-items:center">
+              <input type="number" id="helm-heading-input" min="0" max="359" value="${Math.round(ship.heading)}" style="width:72px;text-align:center">
               <button class="btn flex-1" id="helm-set-heading">SET</button>
             </div>
           </div>
         </div>
+
         <div class="panel">
-          <div class="panel-title">Status</div>
+          <div class="panel-title">🚢 Docking</div>
           <div class="system-row">
             <div class="system-row-label">
               <span>Status</span>
               <span class="system-row-value" id="helm-status-val">${ship.status}</span>
             </div>
           </div>
-          <div class="system-row">
-            <div class="system-row-label">
-              <span>Pos X</span>
-              <span class="system-row-value" id="helm-pos-x">${Math.round(ship.position.x)}</span>
-            </div>
-          </div>
-          <div class="system-row">
-            <div class="system-row-label">
-              <span>Pos Y</span>
-              <span class="system-row-value" id="helm-pos-y">${Math.round(ship.position.y)}</span>
-            </div>
+          <div id="dock-target-text" class="text-dim" style="font-size:11px;margin-bottom:8px">—</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-success flex-1" id="btn-dock" disabled>DOCK</button>
+            <button class="btn btn-danger flex-1" id="btn-undock" ${ship.status !== 'docked' ? 'disabled' : ''}>UNDOCK</button>
           </div>
         </div>
       </div>
+
       <div class="center-area">
         <div class="local-map-area">
           <div class="viewscreen-outer">
@@ -282,54 +287,281 @@ const StationUI = (() => {
           </div>
         </div>
       </div>
+
+      <div class="side-panel right">
+        <div class="panel">
+          <div class="panel-title">📍 Navigation</div>
+          <div class="system-row">
+            <div class="system-row-label"><span>Sector</span><span class="system-row-value" id="helm-sector-val">${_esc(ship.sector)}</span></div>
+          </div>
+          <div class="system-row">
+            <div class="system-row-label"><span>Pos X</span><span class="system-row-value" id="helm-pos-x">${Math.round(ship.position.x)}</span></div>
+          </div>
+          <div class="system-row">
+            <div class="system-row-label"><span>Pos Y</span><span class="system-row-value" id="helm-pos-y">${Math.round(ship.position.y)}</span></div>
+          </div>
+          <div class="system-row">
+            <div class="system-row-label"><span>Speed</span><span class="system-row-value" id="helm-speed-nav">${Math.round(ship.speed)} km/s</span></div>
+          </div>
+          <div class="system-row">
+            <div class="system-row-label"><span>Heading</span><span class="system-row-value" id="helm-hdg-nav">${Math.round(ship.heading)}°</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">🌀 Warp Drive</div>
+          <div class="warp-status-row">
+            <span class="text-dim" style="font-size:11px">Drive:</span>
+            <span id="warp-drive-status" class="warp-status-ready">READY</span>
+          </div>
+          <div style="margin:8px 0 4px;font-size:11px;color:var(--color-text-dim);text-transform:uppercase;letter-spacing:1px">Destination</div>
+          <select id="warp-target-sector" style="width:100%;margin-bottom:8px;font-size:12px">
+            <option value="">— Select Sector —</option>
+            ${sectorOptions}
+          </select>
+          <button class="btn btn-warn" id="btn-warp-engage" style="width:100%">⚡ ENGAGE WARP</button>
+          <div id="warp-progress-bar" class="warp-progress-bar" style="display:none">
+            <div id="warp-progress-fill" class="warp-progress-fill"></div>
+          </div>
+          <div id="warp-cooldown-text" class="text-dim" style="font-size:10px;margin-top:4px;text-align:center;min-height:14px"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">🔊 Audio</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="text-dim" style="font-size:11px">Vol</span>
+            <input type="range" id="sound-volume" min="0" max="100" value="${Math.round(SoundManager.getVolume() * 100)}" style="flex:1;accent-color:var(--color-accent)">
+            <button class="btn" id="btn-mute-toggle" style="padding:4px 8px;font-size:11px">${SoundManager.isMuted() ? 'UNMUTE' : 'MUTE'}</button>
+          </div>
+        </div>
+      </div>
     `;
 
-    // Speed slider
-    const slider = document.getElementById('helm-speed-slider');
+    // ── Speed controls ────────────────────────────────────────────────────
+    const slider  = document.getElementById('helm-speed-slider');
     const display = document.getElementById('helm-speed-display');
     slider.addEventListener('input', () => { display.textContent = slider.value; });
+
     document.getElementById('helm-set-speed').addEventListener('click', async () => {
-      await GameState.setSpeed(parseFloat(slider.value));
-      // Update status to in-transit or docked
+      SoundManager.play('beep');
       const spd = parseFloat(slider.value);
-      await ApiClient.updateShip(GameState.getCurrentShip().id, {
-        status: spd > 0 ? 'in-transit' : 'docked'
-      });
+      await GameState.setSpeed(spd);
+      if (spd === 0) {
+        await ApiClient.updateShip(GameState.getCurrentShip().id, { status: 'docked' });
+      } else if (GameState.getCurrentShip().status === 'docked') {
+        await ApiClient.updateShip(GameState.getCurrentShip().id, { status: 'in-transit' });
+      }
     });
 
-    // Heading buttons
+    document.getElementById('helm-all-stop').addEventListener('click', async () => {
+      SoundManager.play('beep2');
+      slider.value = 0;
+      display.textContent = '0';
+      await GameState.setSpeed(0);
+      await ApiClient.updateShip(GameState.getCurrentShip().id, { status: 'docked' });
+    });
+
+    // ── Heading controls ──────────────────────────────────────────────────
     container.querySelectorAll('.helm-dir-btn[data-delta]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const ship = GameState.getCurrentShip();
-        const current = ship.heading || 0;
+        SoundManager.play('beep');
+        const s = GameState.getCurrentShip();
+        const current = s.heading || 0;
         const delta = parseInt(btn.dataset.delta, 10);
-        let newHeading = ((current + delta) % 360 + 360) % 360;
+        let newHeading;
+        // The "N" button uses a large delta as a sentinel for "set absolute north"
+        if (Math.abs(delta) === 180 && btn.textContent.trim() === 'N') {
+          newHeading = 0;
+        } else {
+          newHeading = ((current + delta) % 360 + 360) % 360;
+        }
         document.getElementById('helm-heading-input').value = Math.round(newHeading);
         GameState.setHeading(newHeading);
       });
     });
 
     document.getElementById('helm-set-heading').addEventListener('click', () => {
+      SoundManager.play('beep');
       const val = parseInt(document.getElementById('helm-heading-input').value, 10);
-      if (!isNaN(val)) {
-        GameState.setHeading(((val % 360) + 360) % 360);
-      }
+      if (!isNaN(val)) GameState.setHeading(((val % 360) + 360) % 360);
     });
+
+    // ── Docking controls ──────────────────────────────────────────────────
+    document.getElementById('btn-dock').addEventListener('click', async () => {
+      try {
+        const result = await GameState.dockShip();
+        SoundManager.play('docking');
+        UI.showToast(`Docked at ${result.dockedAt}`, 'success');
+        slider.value = 0;
+        display.textContent = '0';
+      } catch { /* error shown by GameState */ }
+    });
+
+    document.getElementById('btn-undock').addEventListener('click', async () => {
+      SoundManager.play('beep2');
+      await GameState.undockShip();
+      UI.showToast('Undocking — clear all moorings.', 'info');
+    });
+
+    // ── Warp controls ─────────────────────────────────────────────────────
+    document.getElementById('btn-warp-engage').addEventListener('click', async () => {
+      if (_warpCooldown) { UI.showToast('Warp drive charging — stand by.', 'warn'); return; }
+      const targetSector = document.getElementById('warp-target-sector').value;
+      if (!targetSector) { UI.showToast('Select a destination sector.', 'warn'); return; }
+
+      _warpCooldown = true;
+      const warpBtn      = document.getElementById('btn-warp-engage');
+      const driveStatus  = document.getElementById('warp-drive-status');
+      const progressBar  = document.getElementById('warp-progress-bar');
+      const progressFill = document.getElementById('warp-progress-fill');
+      const cooldownText = document.getElementById('warp-cooldown-text');
+
+      warpBtn.disabled = true;
+      driveStatus.textContent = 'CHARGING';
+      driveStatus.className = 'warp-status-charging';
+      progressBar.style.display = 'block';
+      progressFill.style.width = '0%';
+      SoundManager.play('warp');
+
+      // 2-second charge animation
+      let pct = 0;
+      const chargeInterval = setInterval(() => {
+        pct = Math.min(100, pct + 4);
+        progressFill.style.width = pct + '%';
+      }, 80);
+
+      await new Promise(r => setTimeout(r, 2000));
+      clearInterval(chargeInterval);
+      progressFill.style.width = '100%';
+
+      try {
+        await GameState.warpToSector(targetSector);
+        UI.showToast(`Warp complete — arrived at sector ${targetSector}`, 'success');
+        driveStatus.textContent = 'ENGAGED';
+        driveStatus.className = 'warp-status-ready';
+
+        // Refresh sector dropdown to exclude new current sector
+        const newSectors = GameState.getSectors()
+          .filter(s => s.id !== GameState.getCurrentShip().sector)
+          .map(s => `<option value="${_esc(s.id)}">${_esc(s.id)} — ${_esc(s.name)}</option>`)
+          .join('');
+        const sel = document.getElementById('warp-target-sector');
+        if (sel) sel.innerHTML = `<option value="">— Select Sector —</option>${newSectors}`;
+      } catch { /* error toast already shown */ }
+
+      progressBar.style.display = 'none';
+      progressFill.style.width = '0%';
+
+      // 8-second cooldown
+      let secs = 8;
+      driveStatus.textContent = 'COOLDOWN';
+      driveStatus.className = 'warp-status-charging';
+      const cdInterval = setInterval(() => {
+        secs--;
+        cooldownText.textContent = `Cooldown: ${secs}s`;
+        if (secs <= 0) {
+          clearInterval(cdInterval);
+          cooldownText.textContent = '';
+          driveStatus.textContent = 'READY';
+          driveStatus.className = 'warp-status-ready';
+          warpBtn.disabled = false;
+          _warpCooldown = false;
+        }
+      }, 1000);
+    });
+
+    // ── Audio controls ────────────────────────────────────────────────────
+    document.getElementById('sound-volume').addEventListener('input', (e) => {
+      SoundManager.setVolume(e.target.value / 100);
+    });
+    document.getElementById('btn-mute-toggle').addEventListener('click', () => {
+      const muted = !SoundManager.isMuted();
+      SoundManager.setMuted(muted);
+      document.getElementById('btn-mute-toggle').textContent = muted ? 'UNMUTE' : 'MUTE';
+    });
+
+    // Initial dock button state
+    _updateDockButtonState(ship);
+  }
+
+  function _updateDockButtonState(ship) {
+    const dockBtn  = document.getElementById('btn-dock');
+    const undockBtn = document.getElementById('btn-undock');
+    const dockText = document.getElementById('dock-target-text');
+    if (!dockBtn) return;
+
+    if (ship.status === 'docked') {
+      dockBtn.disabled = true;
+      if (undockBtn) undockBtn.disabled = false;
+      if (dockText) dockText.textContent = 'Currently docked';
+      return;
+    }
+
+    if (undockBtn) undockBtn.disabled = true;
+
+    const sector = GameState.getCurrentSector();
+    if (!sector) { dockBtn.disabled = true; if (dockText) dockText.textContent = '—'; return; }
+
+    const DOCK_RANGE = 80;
+    let nearest = null;
+    let minDist  = Infinity;
+
+    if (sector.starbase) {
+      const dx   = ship.position.x - sector.starbase.x;
+      const dy   = ship.position.y - sector.starbase.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= DOCK_RANGE && dist < minDist) { minDist = dist; nearest = sector.starbase.name; }
+    }
+    for (const planet of (sector.planets || [])) {
+      const dx   = ship.position.x - planet.x;
+      const dy   = ship.position.y - planet.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist <= DOCK_RANGE && dist < minDist) { minDist = dist; nearest = planet.name; }
+    }
+
+    if (nearest) {
+      dockBtn.disabled = false;
+      if (dockText) dockText.textContent = `${nearest} (${Math.round(minDist)} km)`;
+    } else {
+      dockBtn.disabled = true;
+      // Find closest object to show distance
+      let closestName = null;
+      let closestDist = Infinity;
+      if (sector.starbase) {
+        const dx = ship.position.x - sector.starbase.x;
+        const dy = ship.position.y - sector.starbase.y;
+        const d  = Math.sqrt(dx * dx + dy * dy);
+        if (d < closestDist) { closestDist = d; closestName = sector.starbase.name; }
+      }
+      for (const planet of (sector.planets || [])) {
+        const dx = ship.position.x - planet.x;
+        const dy = ship.position.y - planet.y;
+        const d  = Math.sqrt(dx * dx + dy * dy);
+        if (d < closestDist) { closestDist = d; closestName = planet.name; }
+      }
+      if (dockText) {
+        dockText.textContent = closestName
+          ? `${closestName}: ${Math.round(closestDist)} km away`
+          : 'No docking targets in sector';
+      }
+    }
   }
 
   function _updateHelmUI(ship) {
-    const headingVal = document.getElementById('helm-heading-val');
-    if (headingVal) headingVal.textContent = Math.round(ship.heading) + '°';
-    const speedVal = document.getElementById('helm-speed-val');
-    if (speedVal) speedVal.textContent = Math.round(ship.speed) + ' km/s';
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('helm-heading-val',  Math.round(ship.heading) + '°');
+    set('helm-speed-val',    Math.round(ship.speed) + ' km/s');
+    set('helm-status-val',   ship.status);
+    set('helm-pos-x',        Math.round(ship.position.x));
+    set('helm-pos-y',        Math.round(ship.position.y));
+    set('helm-sector-val',   ship.sector);
+    set('helm-speed-nav',    Math.round(ship.speed) + ' km/s');
+    set('helm-hdg-nav',      Math.round(ship.heading) + '°');
+
     const speedBar = document.getElementById('helm-speed-bar');
     if (speedBar) speedBar.style.width = `${(ship.speed / ship.maxSpeed) * 100}%`;
-    const posX = document.getElementById('helm-pos-x');
-    if (posX) posX.textContent = Math.round(ship.position.x);
-    const posY = document.getElementById('helm-pos-y');
-    if (posY) posY.textContent = Math.round(ship.position.y);
-    const statusVal = document.getElementById('helm-status-val');
-    if (statusVal) statusVal.textContent = ship.status;
+
+    _updateDockButtonState(ship);
   }
 
   // ── TACTICAL ──────────────────────────────────────────────────────────────
@@ -415,17 +647,25 @@ const StationUI = (() => {
       </div>
     `;
 
-    document.getElementById('btn-shields-up').addEventListener('click', () => GameState.toggleShields(true));
-    document.getElementById('btn-shields-down').addEventListener('click', () => GameState.toggleShields(false));
+    document.getElementById('btn-shields-up').addEventListener('click', () => {
+      SoundManager.play('shields');
+      GameState.toggleShields(true);
+    });
+    document.getElementById('btn-shields-down').addEventListener('click', () => {
+      SoundManager.play('beep2');
+      GameState.toggleShields(false);
+    });
 
     document.getElementById('btn-fire-phasers').addEventListener('click', () => {
       const target = document.getElementById('selected-target').textContent;
       if (target === 'None') { UI.showToast('No target selected.', 'warn'); return; }
+      SoundManager.play('phasers');
       UI.showToast(`Firing phasers at ${target}!`, 'danger');
     });
     document.getElementById('btn-fire-torpedo').addEventListener('click', () => {
       const target = document.getElementById('selected-target').textContent;
       if (target === 'None') { UI.showToast('No target selected.', 'warn'); return; }
+      SoundManager.play('phasers');
       UI.showToast(`Torpedo away! Target: ${target}`, 'danger');
     });
 
@@ -538,6 +778,7 @@ const StationUI = (() => {
     });
 
     document.getElementById('btn-apply-power').addEventListener('click', async () => {
+      SoundManager.play('beep');
       const newPower = { ...p };
       sliders.forEach(slider => { newPower[slider.dataset.system] = parseInt(slider.value, 10); });
       await GameState.setPower(newPower);
@@ -603,10 +844,12 @@ const StationUI = (() => {
     `;
 
     document.getElementById('btn-yellow-alert').addEventListener('click', () => {
+      SoundManager.play('yellowAlert');
       UI.showToast('Yellow Alert!', 'warn');
       _captainLog('captain-log', 'Captain ordered Yellow Alert.');
     });
     document.getElementById('btn-red-alert').addEventListener('click', () => {
+      SoundManager.play('redAlert');
       UI.showToast('RED ALERT! ALL HANDS TO BATTLE STATIONS!', 'danger');
       _captainLog('captain-log', 'RED ALERT declared!');
     });
@@ -766,6 +1009,7 @@ const StationUI = (() => {
       const toShipId = document.getElementById('hail-target').value;
       const text = document.getElementById('hail-text').value.trim();
       if (!toShipId || !text) { UI.showToast('Select a target and enter a message.', 'warn'); return; }
+      SoundManager.play('hail');
       const hail = await Comms.sendHail(ship.id, toShipId, text);
       if (hail) {
         document.getElementById('hail-text').value = '';

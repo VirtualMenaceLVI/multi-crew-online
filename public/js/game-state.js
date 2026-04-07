@@ -108,12 +108,26 @@ const GameState = (() => {
   async function poll() {
     if (!_state.currentShip) return;
     try {
-      // Refresh current ship
-      const shipData = await ApiClient.getShip(_state.currentShip.id);
+      const prevSector = _state.currentShip.sector;
+
+      // Advance physics via server tick when the ship is moving
+      let shipData;
+      if (_state.currentShip.speed > 0 && _state.currentShip.status !== 'docked') {
+        shipData = await ApiClient.tickShip(_state.currentShip.id, POLL_INTERVAL_MS / 1000);
+      } else {
+        shipData = await ApiClient.getShip(_state.currentShip.id);
+      }
+
       _state.currentShip = shipData.ship;
       emit('shipUpdated', _state.currentShip);
 
-      // Refresh ships in sector
+      // Reload sector data when the ship crosses a sector boundary
+      if (_state.currentShip.sector !== prevSector) {
+        await loadSector(_state.currentShip.sector);
+        emit('sectorChanged', _state.currentShip.sector);
+      }
+
+      // Refresh other ships visible in the sector
       if (_state.currentSector) {
         const shipsData = await ApiClient.getShipsInSector(_state.currentSector.id);
         _state.shipsInSector = shipsData.ships || [];
@@ -157,6 +171,44 @@ const GameState = (() => {
       emit('shipUpdated', _state.currentShip);
     } catch (err) {
       UI.showToast('Failed to update speed: ' + err.message, 'danger');
+    }
+  }
+
+  async function warpToSector(sectorId) {
+    if (!_state.currentShip) return;
+    try {
+      const data = await ApiClient.warpShip(_state.currentShip.id, sectorId);
+      _state.currentShip = data.ship;
+      emit('shipUpdated', _state.currentShip);
+      await loadSector(sectorId);
+      emit('sectorChanged', sectorId);
+    } catch (err) {
+      UI.showToast('Warp failed: ' + err.message, 'danger');
+      throw err;
+    }
+  }
+
+  async function dockShip() {
+    if (!_state.currentShip) return;
+    try {
+      const data = await ApiClient.dockShip(_state.currentShip.id);
+      _state.currentShip = data.ship;
+      emit('shipUpdated', _state.currentShip);
+      return data;
+    } catch (err) {
+      UI.showToast('Docking failed: ' + err.message, 'danger');
+      throw err;
+    }
+  }
+
+  async function undockShip() {
+    if (!_state.currentShip) return;
+    try {
+      const data = await ApiClient.updateShip(_state.currentShip.id, { status: 'in-transit' });
+      _state.currentShip = data.ship;
+      emit('shipUpdated', _state.currentShip);
+    } catch (err) {
+      UI.showToast('Undock failed: ' + err.message, 'danger');
     }
   }
 
@@ -210,7 +262,8 @@ const GameState = (() => {
     getShips, getSectors, getCurrentSector, getShipsInSector,
     loadInitialData, loadSector,
     startPolling, stopPolling, poll,
-    setHeading, setSpeed, setPower, toggleShields,
+    setHeading, setSpeed, warpToSector, dockShip, undockShip,
+    setPower, toggleShields,
     reset
   };
 })();
