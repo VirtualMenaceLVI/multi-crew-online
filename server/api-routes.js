@@ -13,8 +13,13 @@ function requireAuth(req, res, next) {
   if (!token) return res.status(401).json({ error: 'No session token provided' });
   const session = db.getSessionByToken(token);
   if (!session) return res.status(401).json({ error: 'Invalid or expired session' });
+  const player = db.getPlayerById(session.playerId);
+  if (!player) {
+    db.deleteSession(token);
+    return res.status(401).json({ error: 'Invalid or expired session' });
+  }
   req.session = session;
-  req.player = db.getPlayerById(session.playerId);
+  req.player = player;
   next();
 }
 
@@ -122,20 +127,20 @@ router.get('/ships', requireAuth, (req, res) => {
 });
 
 /**
+ * GET /api/ships/sector/:sectorId
+ */
+router.get('/ships/sector/:sectorId', requireAuth, (req, res) => {
+  const ships = db.getShipsInSector(req.params.sectorId);
+  res.json({ ships });
+});
+
+/**
  * GET /api/ships/:id
  */
 router.get('/ships/:id', requireAuth, (req, res) => {
   const ship = db.getShipById(req.params.id);
   if (!ship) return res.status(404).json({ error: 'Ship not found' });
   res.json({ ship });
-});
-
-/**
- * GET /api/ships/sector/:sectorId
- */
-router.get('/ships/sector/:sectorId', requireAuth, (req, res) => {
-  const ships = db.getShipsInSector(req.params.sectorId);
-  res.json({ ships });
 });
 
 /**
@@ -403,6 +408,11 @@ router.post('/comms/hail/:id/close', requireAuth, (req, res) => {
   const hail = db.getHailById(req.params.id);
   if (!hail) return res.status(404).json({ error: 'Hail not found' });
   if (hail.status !== 'accepted') return res.status(400).json({ error: 'Hail channel is not active' });
+
+  const currentShip = req.player.currentShip;
+  if (currentShip !== hail.fromShipId && currentShip !== hail.toShipId) {
+    return res.status(403).json({ error: 'You are not on one of the ships in this channel' });
+  }
 
   const updated = db.updateHail(hail.id, { status: 'closed', closedAt: new Date().toISOString() });
   res.json({ hail: updated });

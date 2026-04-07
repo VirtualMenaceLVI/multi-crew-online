@@ -137,7 +137,6 @@ const MapRenderer = (() => {
       `Class: ${ship.class}<br>Status: ${ship.status}<br>Distance: ${dist}`;
 
     // Position the popup near the ship but keep it inside canvas
-    const bezel = _canvas.closest('.viewscreen-bezel');
     let px = cx + 14;
     let py = cy - 10;
     if (px + 160 > _canvasSize) px = cx - 164;

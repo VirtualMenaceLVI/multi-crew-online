@@ -108,8 +108,13 @@ const GameState = (() => {
   async function poll() {
     if (!_state.currentShip) return;
     try {
-      // Refresh current ship
-      const shipData = await ApiClient.getShip(_state.currentShip.id);
+      // If the ship is moving, advance physics on the server; otherwise just refresh
+      let shipData;
+      if (_state.currentShip.speed > 0) {
+        shipData = await ApiClient.tickShip(_state.currentShip.id, POLL_INTERVAL_MS / 1000);
+      } else {
+        shipData = await ApiClient.getShip(_state.currentShip.id);
+      }
       _state.currentShip = shipData.ship;
       emit('shipUpdated', _state.currentShip);
 

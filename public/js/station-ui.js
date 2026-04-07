@@ -54,8 +54,16 @@ const StationUI = (() => {
     _renderShipList();
     _renderStationCards();
 
-    document.getElementById('btn-create-ship').addEventListener('click', _showCreateShipModal);
-    document.getElementById('btn-logout').addEventListener('click', () => Auth.logout());
+    // Clone buttons to clear any previously attached listeners from prior navigations
+    const createBtn = document.getElementById('btn-create-ship');
+    const newCreateBtn = createBtn.cloneNode(true);
+    createBtn.parentNode.replaceChild(newCreateBtn, createBtn);
+    newCreateBtn.addEventListener('click', _showCreateShipModal);
+
+    const logoutBtn = document.getElementById('btn-logout');
+    const newLogoutBtn = logoutBtn.cloneNode(true);
+    logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+    newLogoutBtn.addEventListener('click', () => Auth.logout());
   }
 
   function _renderShipList() {
@@ -175,9 +183,16 @@ const StationUI = (() => {
       _initViewscreen();
     }
 
-    // Nav bar buttons
-    document.getElementById('btn-change-station').addEventListener('click', _returnToStationSelect);
-    document.getElementById('btn-sector-map').addEventListener('click', () => Router.navigate('sector-map'));
+    // Nav bar buttons — clone to clear listeners from any previous station visit
+    const changeStationBtn = document.getElementById('btn-change-station');
+    const newChangeStation = changeStationBtn.cloneNode(true);
+    changeStationBtn.parentNode.replaceChild(newChangeStation, changeStationBtn);
+    newChangeStation.addEventListener('click', _returnToStationSelect);
+
+    const sectorMapBtn = document.getElementById('btn-sector-map');
+    const newSectorMap = sectorMapBtn.cloneNode(true);
+    sectorMapBtn.parentNode.replaceChild(newSectorMap, sectorMapBtn);
+    newSectorMap.addEventListener('click', () => Router.navigate('sector-map'));
   }
 
   function _onShipUpdated(ship) {
@@ -948,6 +963,8 @@ const StationUI = (() => {
 
   function _returnToStationSelect() {
     GameState.stopPolling();
+    GameState.off('shipUpdated', _onShipUpdated);
+    GameState.off('shipsInSectorUpdated', _updateTacticalTargets);
     MapRenderer.stopRendering();
     Comms.stopPolling();
     Comms.stopHailPolling();
